@@ -16,8 +16,8 @@ void Start()
 	OpenZWave::Options::Get()->Lock();
 	OpenZWave::Manager::Create();
 	OpenZWave::Manager::Get()->AddWatcher(OnNotification, &stateHolder);
-	OpenZWave::Manager::Get()->AddDriver(port);		
-	OpenZWave::Manager::Get()->RemoveDriver(port);
+	// OpenZWave::Manager::Get()->AddDriver(port);		
+	// OpenZWave::Manager::Get()->RemoveDriver(port);
 	OpenZWave::Manager::Get()->RemoveWatcher(OnNotification, &stateHolder);
 	OpenZWave::Manager::Destroy();
 	OpenZWave::Options::Destroy();
