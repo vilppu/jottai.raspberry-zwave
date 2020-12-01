@@ -1,8 +1,4 @@
-#include <stdint.h>
-#include "http.cpp"
-#include "state.cpp"
-#include "notifications.cpp"
-#include "application.cpp"
+#include "dependencies.cpp"
 
 int main(int argc, char* argv[])
 {

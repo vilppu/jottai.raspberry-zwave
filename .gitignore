@@ -248,3 +248,4 @@ config.js
 .firebaserc
 *.png
 OZW_Log.txt
+start.sh

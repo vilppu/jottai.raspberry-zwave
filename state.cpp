@@ -1,6 +1,9 @@
+#pragma once
+#include "dependencies.cpp"
+
 struct Node
 {
-	Node(uint32_t nodeId)
+	Node(const uint32_t nodeId)
 	: nodeId(nodeId)
 	{}
 
@@ -9,31 +12,47 @@ struct Node
 
 struct Home
 {
-	Home(uint32_t homeId)
-	: homeId(homeId)
+	Home(const uint32_t homeId, const std::map<uint32_t, const Node> nodes)
+	: homeId(homeId), nodes(nodes)
 	{}
 
+	Home(const Home &home)
+	: homeId(home.homeId)
+	{}
+
+	static const Home Empty(const uint32_t homeId)
+	{
+		return Home(homeId, std::map<uint32_t, const Node>());
+	}
+
 	const uint32_t homeId;
-	const std::map<uint32_t, Node> nodes;
+	const std::map<uint32_t, const Node> nodes;
 };
 
 struct State
 {	
-	const std::map<uint32_t, Home> Homes;
+	State(const std::map<uint32_t, const Home> homes)
+	: homes(homes)
+	{}
+
+	const std::map<uint32_t, const Home> homes;
+
+	const State AddOrReplaceHome(const Home home) const
+	{
+		std::map<uint32_t, const Home> updatedHomes = homes;
+		
+		updatedHomes.erase(home.homeId);
+		updatedHomes.emplace(home.homeId, home);
+
+		return State(updatedHomes);
+	}
+
+	const State RemoveHome(const Home home) const
+	{
+		std::map<uint32_t, const Home> updatedHomes = homes;
+		
+		updatedHomes.erase(home.homeId);
+
+		return State(updatedHomes);
+	}
 };
-
-struct StateHolder
-{
-	std::mutex mutex;
-	std::unique_ptr<State> state;	
-};
-
-State SetState(StateHolder& stateHolder, std::function<State()> stateProvider)
-{
-	std::scoped_lock lock(stateHolder.mutex);
-	auto newState = stateProvider();
-
-	stateHolder.state = std::make_unique<State>(newState);
-
-	return newState;
-}

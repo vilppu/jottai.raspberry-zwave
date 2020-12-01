@@ -1,8 +1,11 @@
+#pragma once
+#include "dependencies.cpp"
+
 void Start()
 {
-	auto port = "/dev/ttyACM01";
-	StateHolder stateHolder;
-	HttpMessageQueue httpMessageQueue;
+	//auto port = "/dev/ttyACM01";
+	auto port = " /dev/ttyS4";
+	Handler Handler;
 	
 	std::cout<<"Starting ..."<<std::endl;
 
@@ -15,13 +18,14 @@ void Start()
 	OpenZWave::Options::Get()->AddOptionBool("ValidateValueChanges", true);
 	OpenZWave::Options::Get()->Lock();
 	OpenZWave::Manager::Create();
-	OpenZWave::Manager::Get()->AddWatcher(OnNotification, &stateHolder);
-	// OpenZWave::Manager::Get()->AddDriver(port);		
-	// OpenZWave::Manager::Get()->RemoveDriver(port);
-	OpenZWave::Manager::Get()->RemoveWatcher(OnNotification, &stateHolder);
+	OpenZWave::Manager::Get()->AddWatcher(Handler::Handle, &Handler);
+	OpenZWave::Manager::Get()->AddDriver(port);
+	OpenZWave::Manager::Get()->RemoveDriver(port);
+	OpenZWave::Manager::Get()->RemoveWatcher(Handler::Handle, &Handler);
 	OpenZWave::Manager::Destroy();
 	OpenZWave::Options::Destroy();
 
+	sleep(5);
 	std::cout<<"Quitting ..."<<std::endl;
 }
 
@@ -29,12 +33,11 @@ void Test()
 {	
 	std::cout<<"Running self-test ..."<<std::endl;
 
-	StateHolder stateHolder;
-	HttpMessageQueue httpMessageQueue;
+	Handler stateHolder;
 
-	EnqueueHttpMessage(httpMessageQueue, HttpMessage());
-	EnqueueHttpMessage(httpMessageQueue, HttpMessage());
-	EnqueueHttpMessage(httpMessageQueue, HttpMessage());
+	// EnqueueHttpMessageToAgent(JsonObject(""));
+	// EnqueueHttpMessageToAgent(JsonObject(""));
+	// EnqueueHttpMessageToAgent(JsonObject(""));
 
 	std::this_thread::sleep_for (std::chrono::seconds(1));
 }
