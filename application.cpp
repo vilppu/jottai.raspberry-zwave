@@ -3,8 +3,7 @@
 
 void Start()
 {
-	//auto port = "/dev/ttyACM01";
-	auto port = " /dev/ttyS4";
+	auto port = "/dev/ttyACM01";
 	Handler Handler;
 	
 	std::cout<<"Starting ..."<<std::endl;
