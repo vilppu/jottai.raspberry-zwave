@@ -31,6 +31,10 @@ struct Home
 
 struct State
 {	
+	State()
+	: homes(std::map<uint32_t, const Home>())
+	{}
+
 	State(const std::map<uint32_t, const Home> homes)
 	: homes(homes)
 	{}

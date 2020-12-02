@@ -1,14 +1,21 @@
 #pragma once
 #include "dependencies.cpp"
 
+void Log(const std::string message, OpenZWave::Notification const& notification)
+{
+	std::cout<<"Home "<<notification.GetHomeId()<<":"<<message<<std::endl;
+}
+
 struct Handler
 {
 	Agent agent;
 	std::mutex mutex;
-	std::unique_ptr<State> state;
+	std::unique_ptr<State> state = std::make_unique<State>();	
 
 	State OnValueAdded(OpenZWave::Notification const& notification)
 	{
+		Log("OnValueAdded", notification);
+
 		auto newState = ReduceValueAdded(notification, *state);
 
 		return newState;
@@ -16,6 +23,8 @@ struct Handler
 
 	State OnValueRemoved(OpenZWave::Notification const& notification)
 	{
+		Log("OnValueRemoved", notification);
+		
 		auto newState = ReduceValueRemoved(notification, *state);
 
 		return newState;
@@ -23,6 +32,8 @@ struct Handler
 
 	State OnValueChanged(OpenZWave::Notification const& notification)
 	{
+		Log("OnValueChanged", notification);
+		
 		auto newState = ReduceValueChanged(notification, *state);
 
 		return newState;
@@ -30,6 +41,8 @@ struct Handler
 
 	State OnValueRefreshed(OpenZWave::Notification const& notification)
 	{
+		Log("OnValueRefreshed", notification);
+		
 		auto newState = ReduceValueRefreshed(notification, *state);
 
 		return newState;
@@ -37,6 +50,8 @@ struct Handler
 
 	State OnGroup(OpenZWave::Notification const& notification)
 	{
+		Log("OnGroup", notification);
+		
 		auto newState = ReduceGroup(notification, *state);
 
 		return newState;
@@ -44,6 +59,8 @@ struct Handler
 
 	State OnNodeNew(OpenZWave::Notification const& notification)
 	{
+		Log("OnNodeNew", notification);
+		
 		auto newState = ReduceNodeNew(notification, *state);
 
 		return newState;
@@ -51,6 +68,8 @@ struct Handler
 
 	State OnNodeAdded(OpenZWave::Notification const& notification)
 	{
+		Log("OnNodeAdded", notification);
+		
 		auto newState = ReduceNodeAdded(notification, *state);
 
 		return newState;
@@ -58,6 +77,8 @@ struct Handler
 
 	State OnNodeRemoved(OpenZWave::Notification const& notification)
 	{
+		Log("OnNodeRemoved", notification);
+		
 		auto newState = ReduceNodeRemoved(notification, *state);
 
 		return newState;
@@ -65,6 +86,8 @@ struct Handler
 
 	State OnNodeProtocolInfo(OpenZWave::Notification const& notification)
 	{
+		Log("OnNodeProtocolInfo", notification);
+		
 		auto newState = ReduceNodeProtocolInfo(notification, *state);
 
 		return newState;
@@ -72,6 +95,8 @@ struct Handler
 
 	State OnNodeNaming(OpenZWave::Notification const& notification)
 	{
+		Log("OnNodeNaming", notification);
+		
 		auto newState = ReduceNodeNaming(notification, *state);
 
 		return newState;
@@ -79,6 +104,8 @@ struct Handler
 
 	State OnNodeEvent(OpenZWave::Notification const& notification)
 	{
+		Log("OnNodeEvent", notification);
+		
 		auto newState = ReduceNodeEvent(notification, *state);
 
 		return newState;
@@ -86,6 +113,8 @@ struct Handler
 
 	State OnPollingDisabled(OpenZWave::Notification const& notification)
 	{
+		Log("OnPollingDisabled", notification);
+		
 		auto newState = ReducePollingDisabled(notification, *state);
 
 		return newState;
@@ -93,6 +122,8 @@ struct Handler
 
 	State OnPollingEnabled(OpenZWave::Notification const& notification)
 	{
+		Log("OnPollingEnabled", notification);
+		
 		auto newState = ReducePollingEnabled(notification, *state);
 
 		return newState;
@@ -100,6 +131,8 @@ struct Handler
 
 	State OnSceneEvent(OpenZWave::Notification const& notification)
 	{
+		Log("OnSceneEvent", notification);
+		
 		auto newState = ReduceSceneEvent(notification, *state);
 
 		return newState;
@@ -107,6 +140,8 @@ struct Handler
 
 	State OnCreateButton(OpenZWave::Notification const& notification)
 	{
+		Log("OnCreateButton", notification);
+		
 		auto newState = ReduceCreateButton(notification, *state);
 
 		return newState;
@@ -114,6 +149,8 @@ struct Handler
 
 	State OnDeleteButton(OpenZWave::Notification const& notification)
 	{
+		Log("OnDeleteButton", notification);
+		
 		auto newState = ReduceDeleteButton(notification, *state);
 
 		return newState;
@@ -121,6 +158,8 @@ struct Handler
 
 	State OnButtonOn(OpenZWave::Notification const& notification)
 	{
+		Log("OnButtonOn", notification);
+		
 		auto newState = ReduceButtonOn(notification, *state);
 
 		return newState;
@@ -128,6 +167,8 @@ struct Handler
 
 	State OnButtonOff(OpenZWave::Notification const& notification)
 	{
+		Log("OnButtonOff", notification);
+		
 		auto newState = ReduceButtonOff(notification, *state);
 
 		return newState;
@@ -135,6 +176,8 @@ struct Handler
 
 	State OnDriverReady(OpenZWave::Notification const& notification)
 	{
+		Log("OnDriverReady", notification);
+		
 		const auto newState = ReduceDriverReady(notification, *state);
 		const auto homeId = notification.GetHomeId();
 		const auto home = newState.homes.find(homeId)->second;
@@ -147,6 +190,8 @@ struct Handler
 
 	State OnDriverFailed(OpenZWave::Notification const& notification)
 	{
+		Log("OnDriverFailed", notification);
+		
 		auto newState = ReduceDriverFailed(notification, *state);
 
 		return newState;
@@ -154,6 +199,8 @@ struct Handler
 
 	State OnDriverReset(OpenZWave::Notification const& notification)
 	{
+		Log("OnDriverReset", notification);
+		
 		auto newState = ReduceDriverReset(notification, *state);
 
 		return newState;
@@ -161,6 +208,8 @@ struct Handler
 
 	State OnEssentialNodeQueriesComplete(OpenZWave::Notification const& notification)
 	{
+		Log("OnEssentialNodeQueriesComplete", notification);
+		
 		auto newState = ReduceEssentialNodeQueriesComplete(notification, *state);
 
 		return newState;
@@ -168,6 +217,8 @@ struct Handler
 
 	State OnNodeQueriesComplete(OpenZWave::Notification const& notification)
 	{
+		Log("OnNodeQueriesComplete", notification);
+		
 		auto newState = ReduceValueAdded(notification, *state);
 
 		return newState;
@@ -175,6 +226,8 @@ struct Handler
 
 	State OnAwakeNodesQueried(OpenZWave::Notification const& notification)
 	{
+		Log("OnAwakeNodesQueried", notification);
+		
 		auto newState = ReduceAwakeNodesQueried(notification, *state);
 
 		return newState;
@@ -182,6 +235,8 @@ struct Handler
 
 	State OnAllNodesQueriedSomeDead(OpenZWave::Notification const& notification)
 	{
+		Log("OnAllNodesQueriedSomeDead", notification);
+		
 		auto newState = ReduceAllNodesQueriedSomeDead(notification, *state);
 
 		return newState;
@@ -189,6 +244,8 @@ struct Handler
 
 	State OnAllNodesQueried(OpenZWave::Notification const& notification)
 	{
+		Log("OnAllNodesQueried", notification);
+		
 		auto newState = ReduceAllNodesQueried(notification, *state);
 
 		return newState;
@@ -196,6 +253,8 @@ struct Handler
 
 	State OnNotification(OpenZWave::Notification const& notification)
 	{
+		Log("OnNotification", notification);
+		
 		auto newState = ReduceNotification(notification, *state);
 
 		return newState;
@@ -203,6 +262,8 @@ struct Handler
 
 	State OnDriverRemoved(OpenZWave::Notification const& notification)
 	{
+		Log("OnDriverRemoved", notification);
+		
 		auto newState = ReduceDriverRemoved(notification, *state);
 
 		return newState;
@@ -210,6 +271,8 @@ struct Handler
 
 	State OnControllerCommand(OpenZWave::Notification const& notification)
 	{
+		Log("OnControllerCommand", notification);
+		
 		auto newState = ReduceControllerCommand(notification, *state);
 
 		return newState;
@@ -217,6 +280,8 @@ struct Handler
 
 	State OnNodeReset(OpenZWave::Notification const& notification)
 	{
+		Log("OnNodeReset", notification);
+		
 		auto newState = ReduceNodeReset(notification, *state);
 
 		return newState;
@@ -224,6 +289,8 @@ struct Handler
 
 	State OnUserAlerts(OpenZWave::Notification const& notification)
 	{
+		Log("OnUserAlerts", notification);
+		
 		auto newState = ReduceUserAlerts(notification, *state);
 
 		return newState;
@@ -231,6 +298,8 @@ struct Handler
 
 	State OnManufacturerSpecificDBReady(OpenZWave::Notification const& notification)
 	{
+		Log("OnManufacturerSpecificDBReady", notification);
+		
 		auto newState = ReduceManufacturerSpecificDBReady(notification, *state);
 
 		return newState;
@@ -238,7 +307,9 @@ struct Handler
 
 	State Handle(OpenZWave::Notification const& notification)
 	{
-		switch(notification.GetType() )
+		std::cout<<"Notification: "<<notification.GetType()<<std::endl;
+
+		switch(notification.GetType())
 		{
 			case OpenZWave::Notification::Type_ValueAdded: return OnValueAdded(notification);
 			case OpenZWave::Notification::Type_ValueRemoved: return OnValueRemoved(notification);
@@ -289,6 +360,6 @@ struct Handler
 	{
 		auto handler = static_cast<Handler*>(context);
 
-		handler->Handle(*notification);		
+		handler->HandleAndSetState(*notification);
 	}
 };
