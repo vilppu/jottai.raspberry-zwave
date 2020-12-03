@@ -20,6 +20,7 @@ struct SensorData
 struct Agent
 {
     Http http;
+    const std::string path = "sensor-data";
 
     void SendGatewayUpEvent(std::string gatewayId)
     {       
@@ -31,7 +32,7 @@ struct Agent
         <<"  \"gatewayId\": \""<<gatewayId<<"\""
         <<"}";
 
-        http.EnqueueHttpMessageToAgent(JsonObject(json));
+        http.EnqueueHttpMessageToAgent(HttpRequest(path, json));
     }
 
     void SendGatewayDownEvent(std::string gatewayId)
@@ -44,7 +45,7 @@ struct Agent
         <<"  \"gatewayId\": \""<<gatewayId<<"\""
         <<"}";
 
-        http.EnqueueHttpMessageToAgent(JsonObject(json));
+        http.EnqueueHttpMessageToAgent(HttpRequest(path, json));
     }
 
     void SendGatewayActiveEvent(std::string gatewayId)
@@ -57,7 +58,7 @@ struct Agent
         <<"  \"gatewayId\": \""<<gatewayId<<"\""        
         <<"}";
 
-        http.EnqueueHttpMessageToAgent(JsonObject(json));
+        http.EnqueueHttpMessageToAgent(HttpRequest(path, json));
     }
 
     void SendSensorUpEvent(std::string gatewayId, std::string sensorId, std::string sensorName)
@@ -72,7 +73,7 @@ struct Agent
         <<"  \"sensorName\": \""<<sensorName<<"\""
         <<"}";
 
-        http.EnqueueHttpMessageToAgent(JsonObject(json));
+        http.EnqueueHttpMessageToAgent(HttpRequest(path, json));
     }
 
     void SendSensorDataEvent(std::string gatewayId, SensorData sensorData)
@@ -107,6 +108,6 @@ struct Agent
 
         json<<"}";
 
-        http.EnqueueHttpMessageToAgent(JsonObject(json));
+        http.EnqueueHttpMessageToAgent(HttpRequest(path, json));
     }
 };

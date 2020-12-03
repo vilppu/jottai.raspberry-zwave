@@ -40,9 +40,9 @@ void Test()
 
 	Handler stateHolder;
 
-	// EnqueueHttpMessageToAgent(JsonObject(""));
-	// EnqueueHttpMessageToAgent(JsonObject(""));
-	// EnqueueHttpMessageToAgent(JsonObject(""));
+	// EnqueueHttpMessageToAgent(HttpRequest(""));
+	// EnqueueHttpMessageToAgent(HttpRequest(""));
+	// EnqueueHttpMessageToAgent(HttpRequest(""));
 
 	std::this_thread::sleep_for (std::chrono::seconds(1));
 }

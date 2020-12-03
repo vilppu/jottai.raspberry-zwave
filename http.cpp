@@ -3,22 +3,24 @@
 
 std::string bearerToken = "";
 
-struct JsonObject
+struct HttpRequest
 {
+    const bool isPost;
+    const std::string path;
     const std::string jsonContent;
 
-    JsonObject(const std::string jsonContent)
-    : jsonContent(jsonContent)
+    HttpRequest(const std::string path, const std::string jsonContent)
+    : path(path), jsonContent(jsonContent), isPost(true)
     {        
     }
 
-    JsonObject(const std::stringstream& jsonContent)
-    : jsonContent(jsonContent.str())
+    HttpRequest(const std::string path, const std::stringstream& jsonContent)
+    : path(path), jsonContent(jsonContent.str()), isPost(true)
     {        
     }
 
-    JsonObject(const char* jsonContent)
-    : jsonContent(jsonContent)
+    HttpRequest(const std::string path, const char* jsonContent)
+    : path(path), jsonContent(jsonContent), isPost(true)
     {
     }
 };
@@ -135,7 +137,7 @@ void RefreshBearerToken()
         
         if(accessTokenResult.size() == 2)
         {
-            bearerToken = accessTokenResult[1];            
+            bearerToken = accessTokenResult[1];
         }        
         else
         {
@@ -151,16 +153,17 @@ void RefreshBearerToken()
     }
 }
 
-long TryToSendJsonToAgent(std::string json)
+long TryToSendToAgent(HttpRequest request)
 {
     auto curl = curl_easy_init();
 
     if(curl)
     {        
-        auto apiHost = getenv("JOTTAI_API_HOST");
+        auto apiHost = std::string(getenv("JOTTAI_API_HOST"));
+        auto url = apiHost + request.path;
         long httpStatusCode = 0;
         struct curl_slist *headers = NULL;
-        auto content = json.c_str();
+        auto content = request.jsonContent.c_str();
         auto authorization = std::string("Authorization: Bearer ") + bearerToken;
         
         headers = curl_slist_append(headers, "Accept: application/json");
@@ -168,16 +171,15 @@ long TryToSendJsonToAgent(std::string json)
         headers = curl_slist_append(headers, "charsets: utf-8");
         headers = curl_slist_append(headers, authorization.c_str());
 
-        LogErrors(curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers));
-		
+        LogErrors(curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers));		
         curl_easy_setopt(curl, CURLOPT_TIMEOUT, 20L);
-        curl_easy_setopt(curl, CURLOPT_URL, apiHost);
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
         curl_easy_setopt(curl, CURLOPT_POST, 1L);
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, content);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlDiscardReponseCallback);
-        ExecuteWithLoggingUntilSucceed(curl);   
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlDiscardReponseCallback);        
+        ExecuteWithLoggingUntilSucceed(curl);        
         LogErrors(curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpStatusCode));            
         curl_easy_cleanup(curl);
         curl_slist_free_all(headers);
@@ -192,22 +194,29 @@ long TryToSendJsonToAgent(std::string json)
     }    
 }
 
-void SendJsonToAgent(std::string json)
+void SendToAgent(HttpRequest request)
 {
     int httpStatusCode = 0;
 
     while (NotSuccess(httpStatusCode))
     {
-        httpStatusCode = TryToSendJsonToAgent(json);        
+        httpStatusCode = TryToSendToAgent(request);
 
-        if(httpStatusCode == 401 || httpStatusCode == 405)
+        if(httpStatusCode == 401)
         {
             std::cout<<"Fetching a new bearer token"<<std::endl;
             RefreshBearerToken();
         }
+        else if(httpStatusCode == 403)
+        {   
+            std::cout<<"Access denied"<<std::endl;
+            std::cout<<"Fetching a new bearer token in 10 seconds"<<std::endl;
+            sleep(10);
+            RefreshBearerToken();
+        }
         else if (NotSuccess(httpStatusCode))
         {
-            std::cerr<<"HTTP post failed with status code: "<<httpStatusCode<<std::endl;
+            std::cerr<<"HTTP request failed with status code: "<<httpStatusCode<<std::endl;
             std::cout<<"Retrying after 5 seconds"<<std::endl;
             sleep(5);
         }
@@ -221,7 +230,7 @@ struct HttpMessagesToAgentQueue
 	std::mutex messageWaiterMutex;
 	std::thread thread;
 	std::condition_variable messageWaiter;
-	std::queue<JsonObject> messages;
+	std::queue<HttpRequest> messages;
 
 	HttpMessagesToAgentQueue()
 	: active(true), thread(Worker, this)
@@ -255,11 +264,9 @@ private:
 
 				auto message = self->messages.front();
 
-				SendJsonToAgent(message.jsonContent);
+				SendToAgent(message);
 
 				self->messages.pop();
-
-				std::cout<<"Sent: "<<message.jsonContent<<std::endl;
 			}
 			else
 			{
@@ -273,7 +280,7 @@ struct Http
 {
     HttpMessagesToAgentQueue messageQueue;
 
-    void EnqueueHttpMessageToAgent(JsonObject httpMesssage)
+    void EnqueueHttpMessageToAgent(HttpRequest httpMesssage)
     {
         std::scoped_lock messageQueueLock(messageQueue.messageQueueMutex);	
 
