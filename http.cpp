@@ -5,6 +5,8 @@ std::string bearerToken = "";
 
 struct JsonObject
 {
+    const std::string jsonContent;
+
     JsonObject(const std::string jsonContent)
     : jsonContent(jsonContent)
     {        
@@ -19,8 +21,6 @@ struct JsonObject
     : jsonContent(jsonContent)
     {
     }
-
-    const std::string jsonContent;
 };
 
 CURLcode LogErrors(CURLcode curlCode)

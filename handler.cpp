@@ -10,7 +10,16 @@ struct Handler
 {
 	Agent agent;
 	std::mutex mutex;
-	std::unique_ptr<State> state = std::make_unique<State>();	
+	std::mutex initializationWaiterMutex;
+	std::condition_variable initializationWaiter;
+	std::unique_ptr<State> state = std::make_unique<State>();
+
+	void WaitUntilInitializationHandled()
+	{
+		std::unique_lock initializationWaiterLock(initializationWaiterMutex);
+
+		initializationWaiter.wait(initializationWaiterLock);
+	}
 
 	State OnValueAdded(OpenZWave::Notification const& notification)
 	{
@@ -194,6 +203,8 @@ struct Handler
 		
 		auto newState = ReduceDriverFailed(notification, *state);
 
+		initializationWaiter.notify_one();
+
 		return newState;
 	}
 
@@ -239,6 +250,8 @@ struct Handler
 		
 		auto newState = ReduceAllNodesQueriedSomeDead(notification, *state);
 
+		initializationWaiter.notify_one();
+
 		return newState;
 	}
 
@@ -247,6 +260,8 @@ struct Handler
 		Log("OnAllNodesQueried", notification);
 		
 		auto newState = ReduceAllNodesQueried(notification, *state);
+
+		initializationWaiter.notify_one();
 
 		return newState;
 	}

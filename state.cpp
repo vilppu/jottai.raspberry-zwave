@@ -30,7 +30,9 @@ struct Home
 };
 
 struct State
-{	
+{
+	const std::map<uint32_t, const Home> homes;
+
 	State()
 	: homes(std::map<uint32_t, const Home>())
 	{}
@@ -38,8 +40,6 @@ struct State
 	State(const std::map<uint32_t, const Home> homes)
 	: homes(homes)
 	{}
-
-	const std::map<uint32_t, const Home> homes;
 
 	const State AddOrReplaceHome(const Home home) const
 	{
