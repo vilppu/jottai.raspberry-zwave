@@ -96,6 +96,12 @@ struct Handler
 	State OnNodeAdded(OpenZWave::Notification const& notification)
 	{
 		Log("OnNodeAdded", notification);
+
+		
+		std::cout<<"Id: "<<notification.GetNodeId()<<std::endl;
+		std::cout<<"Name: "<<OpenZWave::Manager::Get()->GetNodeName(notification.GetHomeId(), notification.GetNodeId())<<std::endl;
+		std::cout<<"ManufacturerName: "<<notification.GetValueID().GetTypeAsString()<<std::endl;
+		std::cout<<"NodeProductName: "<<notification.GetValueID().GetGenreAsString()<<std::endl;
 		
 		auto newState = ReduceNodeAdded(notification, *state);
 
