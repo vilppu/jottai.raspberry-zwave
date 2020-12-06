@@ -26,6 +26,12 @@ struct Handler
 		Log("OnValueAdded", notification);
 
 		auto newState = ReduceValueAdded(notification, *state);
+		auto sensorData = ToSensorData(notification);
+		const auto homeId = notification.GetHomeId();
+		const auto home = newState.homes.find(homeId)->second;
+		const auto gatewayId = std::to_string(homeId);
+
+		agent.SendSensorDataEvent(gatewayId, sensorData);
 
 		return newState;
 	}
@@ -42,8 +48,14 @@ struct Handler
 	State OnValueChanged(OpenZWave::Notification const& notification)
 	{
 		Log("OnValueChanged", notification);
-		
+
 		auto newState = ReduceValueChanged(notification, *state);
+		auto sensorData = ToSensorData(notification);
+		const auto homeId = notification.GetHomeId();
+		const auto home = newState.homes.find(homeId)->second;
+		const auto gatewayId = std::to_string(homeId);
+
+		agent.SendSensorDataEvent(gatewayId, sensorData);
 
 		return newState;
 	}
@@ -53,6 +65,12 @@ struct Handler
 		Log("OnValueRefreshed", notification);
 		
 		auto newState = ReduceValueRefreshed(notification, *state);
+		auto sensorData = ToSensorData(notification);
+		const auto homeId = notification.GetHomeId();
+		const auto home = newState.homes.find(homeId)->second;
+		const auto gatewayId = std::to_string(homeId);
+
+		agent.SendSensorDataEvent(gatewayId, sensorData);
 
 		return newState;
 	}

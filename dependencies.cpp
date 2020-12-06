@@ -13,6 +13,7 @@
 #include <list>
 #include <map>
 #include <mutex>
+#include <optional>
 #include <sstream>
 #include <queue>
 #include <regex>
@@ -36,5 +37,6 @@
 #include "agent.cpp"
 #include "state.cpp"
 #include "reducer.cpp"
+#include "mapper.cpp"
 #include "handler.cpp"
 #include "application.cpp"

@@ -9,8 +9,8 @@ void Start()
 	std::cout<<"Starting ..."<<std::endl;
 
 	OpenZWave::Options::Create( "./open-zwave/config/", "", "");
-	OpenZWave::Options::Get()->AddOptionInt("SaveLogLevel", OpenZWave::LogLevel_Detail);
-	OpenZWave::Options::Get()->AddOptionInt("QueueLogLevel", OpenZWave::LogLevel_Debug);
+	OpenZWave::Options::Get()->AddOptionInt("SaveLogLevel", OpenZWave::LogLevel_Error);
+	OpenZWave::Options::Get()->AddOptionInt("QueueLogLevel", OpenZWave::LogLevel_Error);
 	OpenZWave::Options::Get()->AddOptionInt("DumpTrigger", OpenZWave::LogLevel_Error);
 	OpenZWave::Options::Get()->AddOptionInt("PollInterval", 500);
 	OpenZWave::Options::Get()->AddOptionBool("IntervalBetweenPolls", true);

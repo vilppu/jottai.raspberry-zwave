@@ -5,16 +5,45 @@ struct SensorDatum
 {
     const std::string name;
     const std::string value;
-    const std::string scale;
-    const std::string formattedValue;
+    const std::optional<std::string> formattedValue;
+    const std::optional<int> scale;
 };
 
 struct SensorData
 {
-    const std::string sensorId;
+    const std::string deviceId;
     const std::vector<SensorDatum> data;
-    const int batteryVoltage;
-    const int rssi;
+    const int timestamp;
+    const std::optional<float> batteryVoltage;
+    const std::optional<float> rssi;
+
+    SensorData()
+    : deviceId(), data(), timestamp(0), batteryVoltage(0), rssi(0)
+    {        
+    }
+
+    SensorData(
+        const std::string deviceId,
+        const std::vector<SensorDatum> data,
+        const int timestamp,
+        const std::optional<float> batteryVoltage,
+        const std::optional<float> rssi)
+    : deviceId(deviceId), data(data), timestamp(SinceEpoch()), batteryVoltage(batteryVoltage), rssi(rssi)
+    {        
+    }
+
+    static int SinceEpoch()
+    {
+        auto timeSinceEpoch = std::chrono::system_clock::now().time_since_epoch();
+        auto millisecondsSinceEpoch = std::chrono::duration_cast<std::chrono::milliseconds>(timeSinceEpoch);
+
+        return millisecondsSinceEpoch.count();
+    }
+
+    static SensorData Empty()
+    {
+        return SensorData();
+    }
 };
 
 struct Agent
@@ -76,6 +105,45 @@ struct Agent
         http.EnqueueHttpMessageToAgent(HttpRequest(path, json));
     }
 
+    template<typename T>
+    std::string ToOptionalJsonKeyValuePairFollowedByComma(std::string key, T value)
+    {
+        if(value)
+        {
+            return "\"" + key + "\": \"" + std::to_string(*value) + "\",";
+        }
+        else
+        {
+            return std::string();
+        }
+    }
+
+    template<typename T>
+    std::string ToOptionalJsonKeyValuePair(std::string key, T value)
+    {
+        if(value)
+        {
+            return "\"" + key + "\": \"" + std::to_string(*value) + "\"";
+        }
+        else
+        {
+            return std::string();
+        }
+    }
+
+    template<typename T>
+    std::string ToOptionalStringJsonKeyValuePair(std::string key, T value)
+    {
+        if(value)
+        {
+            return "\"" + key + "\": \"" + *value + "\"";
+        }
+        else
+        {
+            return std::string();
+        }
+    }
+
     void SendSensorDataEvent(std::string gatewayId, SensorData sensorData)
     {       
         std::stringstream json;
@@ -83,7 +151,7 @@ struct Agent
         json
         <<"{ "
         <<"  \"event\": \"sensor data\","
-        <<"  \"sensorId\": \""<<sensorData.sensorId<<"\","
+        <<"  \"sensorId\": \""<<sensorData.deviceId<<"\","
         <<"  \"gatewayId\": \""<<gatewayId<<"\","
         <<"  \"data\": [";
 
@@ -93,7 +161,8 @@ struct Agent
             <<"  {"
             <<"    \"name\": \""<<datum.name<<"\","
             <<"    \"value\": \""<<datum.value<<"\","
-            <<"    \"formattedValue\": \""<<datum.formattedValue<<"\""
+            <<ToOptionalJsonKeyValuePairFollowedByComma("scale", datum.scale)
+            <<ToOptionalStringJsonKeyValuePair("formattedValue", datum.formattedValue)
             <<"  }";
 
             if(&datum != &sensorData.data.back()) {
@@ -103,8 +172,8 @@ struct Agent
 
         json
         <<"  ],"
-        <<"  \"batteryVoltage\": \""<<sensorData.batteryVoltage/100<<"."<<sensorData.batteryVoltage%100<<" VDC\","
-        <<"  \"rssi\": \""<<(int)sensorData.rssi<<" dBm\"";
+        <<ToOptionalJsonKeyValuePairFollowedByComma("batteryVoltage", sensorData.batteryVoltage)
+        <<ToOptionalJsonKeyValuePair("rssi", sensorData.rssi);
 
         json<<"}";
 
