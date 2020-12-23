@@ -42,7 +42,7 @@ CURLcode ExecuteWithLogging(CURL* curl)
 
 void ExecuteWithLoggingUntilSucceed(CURL* curl)
 {
-	while(ExecuteWithLogging(curl) != CURLE_OK)
+	while(ExecuteWithLogging(curl) != CURLE_OK && !exiting)
 	{
 		std::cout<<"Retrying after 5 seconds"<<std::endl;
         sleep(5);
@@ -118,7 +118,7 @@ void RefreshBearerToken()
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlStoreReponseCallback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
 
-        while (NotSuccess(httpStatusCode))
+        while (NotSuccess(httpStatusCode) && !exiting)
         {
             ExecuteWithLoggingUntilSucceed(curl);
             LogErrors(curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpStatusCode));
@@ -183,6 +183,8 @@ long TryToSendToAgent(HttpRequest request)
         LogErrors(curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpStatusCode));            
         curl_easy_cleanup(curl);
         curl_slist_free_all(headers);
+        
+        std::cout<<request.jsonContent<<std::endl;
 
         return httpStatusCode;
     }
@@ -198,7 +200,7 @@ void SendToAgent(HttpRequest request)
 {
     int httpStatusCode = 0;
 
-    while (NotSuccess(httpStatusCode))
+    while (NotSuccess(httpStatusCode) && !exiting)
     {
         httpStatusCode = TryToSendToAgent(request);
 
@@ -256,7 +258,7 @@ private:
 	{
 		std::unique_lock messageWaiterLock(self->messageWaiterMutex);
 
-		while (self->active)
+		while (self->active && !exiting)
 		{
 			if(!IsEmpty(self))
 			{

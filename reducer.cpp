@@ -33,7 +33,12 @@ State ReduceNodeNew(OpenZWave::Notification const& notification, const State sta
 
 State ReduceNodeAdded(OpenZWave::Notification const& notification, const State state)
 {
-	return state;
+	const auto homeId = notification.GetHomeId();
+	const auto nodeId = notification.GetNodeId();
+	const auto updatedNode = Node(nodeId, notification.GetValueID());
+	const auto updatedState = state.AddOrReplaceNode(homeId, updatedNode);
+	
+	return updatedState;
 }
 
 State ReduceNodeRemoved(OpenZWave::Notification const& notification, const State state)
@@ -92,12 +97,8 @@ State ReduceButtonOff(OpenZWave::Notification const& notification, const State s
 }
 
 State ReduceDriverReady(OpenZWave::Notification const& notification, const State state)
-{
-	const auto homeId = notification.GetHomeId();
-	const auto newHome = Home::Empty(homeId);
-	const auto updatedState = state.AddOrReplaceHome(newHome);
-	
-	return updatedState;
+{	
+	return state;
 }
 
 State ReduceDriverFailed(OpenZWave::Notification const& notification, const State state)

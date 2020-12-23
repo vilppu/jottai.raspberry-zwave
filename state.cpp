@@ -6,8 +6,13 @@ struct Node
 	Node(const uint32_t nodeId)
 	: nodeId(nodeId)
 	{}
+	
+	Node(const uint32_t nodeId, const OpenZWave::ValueID valueId)
+	: nodeId(nodeId), valueId(valueId)
+	{}
 
 	const uint32_t nodeId;
+	const OpenZWave::ValueID valueId;
 };
 
 struct Home
@@ -41,21 +46,31 @@ struct State
 	: homes(homes)
 	{}
 
-	const State AddOrReplaceHome(const Home home) const
+	const Home GetHome(const uint32_t homeId) const
 	{
-		std::map<uint32_t, const Home> updatedHomes = homes;
-		
-		updatedHomes.erase(home.homeId);
-		updatedHomes.emplace(home.homeId, home);
+		auto home = homes.find(homeId);
 
-		return State(updatedHomes);
+		if (home != homes.end()) {
+			return home->second;
+		}
+		else {
+			return Home::Empty(homeId);
+		}
 	}
 
-	const State RemoveHome(const Home home) const
+	const State AddOrReplaceNode(const uint32_t homeId, const Node node) const
 	{
-		std::map<uint32_t, const Home> updatedHomes = homes;
-		
+		auto home = GetHome(homeId);
+		auto updatedNodes = home.nodes;
+		auto updatedHomes = homes;
+
+		updatedNodes.erase(node.nodeId);
+		updatedNodes.emplace(node.nodeId, node);
+
+		auto updatedHome = Home(homeId, updatedNodes);
+
 		updatedHomes.erase(home.homeId);
+		updatedHomes.emplace(home.homeId, updatedHome);
 
 		return State(updatedHomes);
 	}

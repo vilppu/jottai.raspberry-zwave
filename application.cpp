@@ -4,6 +4,9 @@
 void Start()
 {
 	auto port = "/dev/ttyACM0";
+
+	signal(SIGINT, SIGINTHandler);
+
 	Handler handler;
 	
 	std::cout<<"Starting ..."<<std::endl;
@@ -24,13 +27,18 @@ void Start()
 	handler.WaitUntilInitializationHandled();
 	std::cout<<"Initializing completed."<<std::endl;
 
+	while (!exiting)
+	{
+		std::cout<<"Waiting ..."<<std::endl;
+		sleep(5);
+	}
+
 	OpenZWave::Manager::Get()->RemoveDriver(port);
 	OpenZWave::Manager::Get()->RemoveWatcher(Handler::Handle, &handler);
 	OpenZWave::Manager::Destroy();
 	OpenZWave::Options::Destroy();
 
-	std::cout<<"Sleeping ..."<<std::endl;
-	sleep(5);
+	
 	std::cout<<"Quitting ..."<<std::endl;
 }
 

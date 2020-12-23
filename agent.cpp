@@ -1,49 +1,80 @@
 #pragma once
 #include "dependencies.cpp"
 
-struct SensorDatum
-{
-    const std::string name;
+struct DeviceDatum
+{    
+    DeviceDatum(
+        const std::string propertyId,
+        const std::string propertyTypeId,
+        const std::string propertyName,
+        const std::string propertyDescription,
+        const std::string protocol,
+        const std::string unitOfMeasurement,
+        const std::string valueType,
+        const std::string value,
+        const std::string formattedValue,
+        const std::string minimumValue,
+        const std::string maximumValue)
+    : propertyId(propertyId),
+      propertyTypeId(propertyTypeId),
+      propertyName(propertyId),
+      propertyDescription(propertyDescription),
+      protocol(protocol),
+      unitOfMeasurement(unitOfMeasurement),
+      valueType(valueType),
+      value(value),
+      formattedValue(formattedValue),
+      minimumValue(minimumValue),
+      maximumValue(maximumValue)
+    {        
+    }
+
+    const std::string propertyId;
+    const std::string propertyTypeId;
+    const std::string propertyName;
+    const std::string propertyDescription;
+    const std::string protocol;
+    const std::string unitOfMeasurement;
+    const std::string valueType;
     const std::string value;
-    const std::optional<std::string> formattedValue;
-    const std::optional<int> scale;
+    const std::string formattedValue;
+    const std::string minimumValue;
+    const std::string maximumValue;
 };
 
-struct SensorData
+struct DeviceData
 {
-    const std::string deviceId;
-    const std::vector<SensorDatum> data;
-    const int timestamp;
-    const std::optional<float> batteryVoltage;
-    const std::optional<float> rssi;
-
-    SensorData()
-    : deviceId(), data(), timestamp(0), batteryVoltage(0), rssi(0)
-    {        
-    }
-
-    SensorData(
+    DeviceData(
+        const std::string gatewayId,
+        const std::string channel,
         const std::string deviceId,
-        const std::vector<SensorDatum> data,
-        const int timestamp,
-        const std::optional<float> batteryVoltage,
-        const std::optional<float> rssi)
-    : deviceId(deviceId), data(data), timestamp(SinceEpoch()), batteryVoltage(batteryVoltage), rssi(rssi)
+        const std::string manufacturerName,
+        const std::string deviceName,
+        const std::vector<DeviceDatum> data,
+        const std::string batteryVoltage,
+        const std::string rssi,
+        const std::string timestamp)
+    : gatewayId(gatewayId),
+      channel(channel),
+      deviceId(deviceId),
+      manufacturerName(manufacturerName),
+      deviceName(deviceName),
+      data(data),
+      batteryVoltage(batteryVoltage),
+      rssi(rssi),
+      timestamp(timestamp)
     {        
     }
 
-    static int SinceEpoch()
-    {
-        auto timeSinceEpoch = std::chrono::system_clock::now().time_since_epoch();
-        auto millisecondsSinceEpoch = std::chrono::duration_cast<std::chrono::milliseconds>(timeSinceEpoch);
-
-        return millisecondsSinceEpoch.count();
-    }
-
-    static SensorData Empty()
-    {
-        return SensorData();
-    }
+    const std::string gatewayId;
+    const std::string channel;
+    const std::string deviceId;
+    const std::string manufacturerName;
+    const std::string deviceName;
+    const std::vector<DeviceDatum> data;
+    const std::string batteryVoltage;
+    const std::string rssi;
+    const std::string timestamp;
 };
 
 struct Agent
@@ -51,118 +82,37 @@ struct Agent
     Http http;
     const std::string path = "sensor-data";
 
-    void SendGatewayUpEvent(std::string gatewayId)
+    void SendSensorDataEvent(std::string gatewayId, DeviceData sensorData)
     {       
         std::stringstream json;
 
         json
         <<"{ "
-        <<"  \"event\": \"gateway up\","
-        <<"  \"gatewayId\": \""<<gatewayId<<"\""
-        <<"}";
-
-        http.EnqueueHttpMessageToAgent(HttpRequest(path, json));
-    }
-
-    void SendGatewayDownEvent(std::string gatewayId)
-    {       
-        std::stringstream json;
-
-        json
-        <<"{ "
-        <<"  \"event\": \"gateway down\","
-        <<"  \"gatewayId\": \""<<gatewayId<<"\""
-        <<"}";
-
-        http.EnqueueHttpMessageToAgent(HttpRequest(path, json));
-    }
-
-    void SendGatewayActiveEvent(std::string gatewayId)
-    {       
-        std::stringstream json;
-
-        json
-        <<"{ "
-        <<"  \"event\": \"gateway active\","
-        <<"  \"gatewayId\": \""<<gatewayId<<"\""        
-        <<"}";
-
-        http.EnqueueHttpMessageToAgent(HttpRequest(path, json));
-    }
-
-    void SendSensorUpEvent(std::string gatewayId, std::string sensorId, std::string sensorName)
-    {       
-        std::stringstream json;
-
-        json
-        <<"{ "
-        <<"  \"event\": \"sensor up\","
-        <<"  \"sensorId\": \""<<sensorId<<"\","
-        <<"  \"gatewayId\": \""<<gatewayId<<"\","
-        <<"  \"sensorName\": \""<<sensorName<<"\""
-        <<"}";
-
-        http.EnqueueHttpMessageToAgent(HttpRequest(path, json));
-    }
-
-    template<typename T>
-    std::string ToOptionalJsonKeyValuePairFollowedByComma(std::string key, T value)
-    {
-        if(value)
-        {
-            return "\"" + key + "\": \"" + std::to_string(*value) + "\",";
-        }
-        else
-        {
-            return std::string();
-        }
-    }
-
-    template<typename T>
-    std::string ToOptionalJsonKeyValuePair(std::string key, T value)
-    {
-        if(value)
-        {
-            return "\"" + key + "\": \"" + std::to_string(*value) + "\"";
-        }
-        else
-        {
-            return std::string();
-        }
-    }
-
-    template<typename T>
-    std::string ToOptionalStringJsonKeyValuePair(std::string key, T value)
-    {
-        if(value)
-        {
-            return "\"" + key + "\": \"" + *value + "\"";
-        }
-        else
-        {
-            return std::string();
-        }
-    }
-
-    void SendSensorDataEvent(std::string gatewayId, SensorData sensorData)
-    {       
-        std::stringstream json;
-
-        json
-        <<"{ "
-        <<"  \"event\": \"sensor data\","
+        <<"  \"gatewayId\": \""<<sensorData.gatewayId<<"\","
+        <<"  \"channel\": \""<<sensorData.channel<<"\","
+        <<"  \"deviceId\": \""<<sensorData.deviceId<<"\","
         <<"  \"sensorId\": \""<<sensorData.deviceId<<"\","
-        <<"  \"gatewayId\": \""<<gatewayId<<"\","
+        <<"  \"manufacturerName\": \""<<sensorData.manufacturerName<<"\","
+        <<"  \"batteryVoltage\": \""<<sensorData.batteryVoltage<<"\","
+        <<"  \"rssi\": \""<<sensorData.rssi<<"\","
+        <<"  \"timestamp\": \""<<sensorData.timestamp<<"\","
         <<"  \"data\": [";
 
         for(auto& datum : sensorData.data)
         {
             json
             <<"  {"
-            <<"    \"name\": \""<<datum.name<<"\","
+            <<"    \"propertyId\": \""<<datum.propertyId<<"\","
+            <<"    \"propertyTypeId\": \""<<datum.propertyTypeId<<"\","
+            <<"    \"propertyName\": \""<<datum.propertyName<<"\","
+            <<"    \"propertyDescription\": \""<<datum.propertyDescription<<"\","
+            <<"    \"protocol\": \""<<datum.protocol<<"\","
+            <<"    \"unitOfMeasurement\": \""<<datum.unitOfMeasurement<<"\","
+            <<"    \"valueType\": \""<<datum.valueType<<"\","
             <<"    \"value\": \""<<datum.value<<"\","
-            <<ToOptionalJsonKeyValuePairFollowedByComma("scale", datum.scale)
-            <<ToOptionalStringJsonKeyValuePair("formattedValue", datum.formattedValue)
+            <<"    \"formattedValue\": \""<<datum.formattedValue<<"\","
+            <<"    \"minimumValue\": \""<<datum.minimumValue<<"\","
+            <<"    \"maximumValue\": \""<<datum.maximumValue<<"\""
             <<"  }";
 
             if(&datum != &sensorData.data.back()) {
@@ -172,10 +122,7 @@ struct Agent
 
         json
         <<"  ],"
-        <<ToOptionalJsonKeyValuePairFollowedByComma("batteryVoltage", sensorData.batteryVoltage)
-        <<ToOptionalJsonKeyValuePair("rssi", sensorData.rssi);
-
-        json<<"}";
+        <<"}";
 
         http.EnqueueHttpMessageToAgent(HttpRequest(path, json));
     }

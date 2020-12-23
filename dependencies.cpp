@@ -4,6 +4,7 @@
 #include <curl/curl.h>
 #include <stdint.h>
 #include <unistd.h>
+#include <signal.h>
 
 // C++ libraries
 #include <condition_variable>
@@ -33,6 +34,7 @@
 #include "platform/Log.h"
 
 // Application
+#include "signals.cpp"
 #include "http.cpp"
 #include "agent.cpp"
 #include "state.cpp"
