@@ -3,7 +3,12 @@
 
 State ReduceValueAdded(OpenZWave::Notification const& notification, const State state)
 {
-	return state;
+	const auto homeId = notification.GetHomeId();
+	const auto nodeId = notification.GetNodeId();
+	const auto valueId = notification.GetValueID();
+	const auto updatedState = state.AddOrReplaceValueId(homeId, nodeId, valueId);
+	
+	return updatedState;
 }
 
 State ReduceValueRemoved(OpenZWave::Notification const& notification, const State state)
@@ -13,12 +18,22 @@ State ReduceValueRemoved(OpenZWave::Notification const& notification, const Stat
 
 State ReduceValueChanged(OpenZWave::Notification const& notification, const State state)
 {
-	return state;
+	const auto homeId = notification.GetHomeId();
+	const auto nodeId = notification.GetNodeId();
+	const auto valueId = notification.GetValueID();
+	const auto updatedState = state.AddOrReplaceValueId(homeId, nodeId, valueId);
+	
+	return updatedState;
 }
 
 State ReduceValueRefreshed(OpenZWave::Notification const& notification, const State state)
 {
-	return state;
+	const auto homeId = notification.GetHomeId();
+	const auto nodeId = notification.GetNodeId();
+	const auto valueId = notification.GetValueID();
+	const auto updatedState = state.AddOrReplaceValueId(homeId, nodeId, valueId);
+	
+	return updatedState;
 }
 
 State ReduceGroup(OpenZWave::Notification const& notification, const State state)
@@ -28,15 +43,18 @@ State ReduceGroup(OpenZWave::Notification const& notification, const State state
 
 State ReduceNodeNew(OpenZWave::Notification const& notification, const State state)
 {
-	return state;
+	const auto homeId = notification.GetHomeId();
+	const auto nodeId = notification.GetNodeId();
+	const auto updatedState = state.AddNode(homeId, nodeId);
+	
+	return updatedState;
 }
 
 State ReduceNodeAdded(OpenZWave::Notification const& notification, const State state)
 {
 	const auto homeId = notification.GetHomeId();
 	const auto nodeId = notification.GetNodeId();
-	const auto updatedNode = Node(nodeId, notification.GetValueID());
-	const auto updatedState = state.AddOrReplaceNode(homeId, updatedNode);
+	const auto updatedState = state.AddNode(homeId, nodeId);
 	
 	return updatedState;
 }

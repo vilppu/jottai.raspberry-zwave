@@ -6,21 +6,22 @@ std::string bearerToken = "";
 struct HttpRequest
 {
     const bool isPost;
+    const long timeout;
     const std::string path;
     const std::string jsonContent;
 
-    HttpRequest(const std::string path, const std::string jsonContent)
-    : path(path), jsonContent(jsonContent), isPost(true)
+    HttpRequest(const std::string path, const std::string jsonContent, bool isPost, long timeout)
+    : path(path), jsonContent(jsonContent), isPost(isPost), timeout(timeout)
     {        
     }
 
-    HttpRequest(const std::string path, const std::stringstream& jsonContent)
-    : path(path), jsonContent(jsonContent.str()), isPost(true)
+    HttpRequest(const std::string path, const std::stringstream& jsonContent, bool isPost, long timeout)
+    : path(path), jsonContent(jsonContent.str()), isPost(isPost), timeout(timeout)
     {        
     }
 
-    HttpRequest(const std::string path, const char* jsonContent)
-    : path(path), jsonContent(jsonContent), isPost(true)
+    HttpRequest(const std::string path, const char* jsonContent, bool isPost, long timeout)
+    : path(path), jsonContent(jsonContent), isPost(isPost), timeout(timeout)
     {
     }
 };
@@ -153,12 +154,13 @@ void RefreshBearerToken()
     }
 }
 
-long TryToSendToAgent(HttpRequest request)
+std::tuple<long, const std::string> TryToSendToAgent(HttpRequest request)
 {
     auto curl = curl_easy_init();
 
     if(curl)
-    {        
+    {
+        std::string response = "";
         auto apiHost = std::string(getenv("JOTTAI_API_HOST"));
         auto url = apiHost + request.path;
         long httpStatusCode = 0;
@@ -171,40 +173,46 @@ long TryToSendToAgent(HttpRequest request)
         headers = curl_slist_append(headers, "charsets: utf-8");
         headers = curl_slist_append(headers, authorization.c_str());
 
-        LogErrors(curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers));		
-        curl_easy_setopt(curl, CURLOPT_TIMEOUT, 20L);
+        LogErrors(curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers));
+        curl_easy_setopt(curl, CURLOPT_TIMEOUT, request.timeout);
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-        curl_easy_setopt(curl, CURLOPT_POST, 1L);
-        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, content);
+        if(request.isPost)
+        {
+            curl_easy_setopt(curl, CURLOPT_POST, 1L);
+            curl_easy_setopt(curl, CURLOPT_POSTFIELDS, content);
+        }
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlDiscardReponseCallback);        
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlStoreReponseCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);      
         ExecuteWithLoggingUntilSucceed(curl);        
         LogErrors(curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpStatusCode));            
         curl_easy_cleanup(curl);
         curl_slist_free_all(headers);
-        
-        std::cout<<request.jsonContent<<std::endl;
 
-        return httpStatusCode;
+        return { httpStatusCode, response };
     }
     else
     {
         std::cerr<<"failed to initialize libcurl"<<std::endl;
 
-        return -1;
-    }    
+        return { -1, std::string() };
+    }
 }
 
-void SendToAgent(HttpRequest request)
+std::tuple<long, const std::string> SendToAgent(HttpRequest request)
 {
     int httpStatusCode = 0;
 
-    while (NotSuccess(httpStatusCode) && !exiting)
+    while (true)
     {
-        httpStatusCode = TryToSendToAgent(request);
+        auto [httpStatusCode, response] = TryToSendToAgent(request);
 
-        if(httpStatusCode == 401)
+        if(exiting)
+        {
+            return { httpStatusCode, response };
+        }
+        else if(httpStatusCode == 401)
         {
             std::cout<<"Fetching a new bearer token"<<std::endl;
             RefreshBearerToken();
@@ -218,10 +226,14 @@ void SendToAgent(HttpRequest request)
         }
         else if (NotSuccess(httpStatusCode))
         {
-            std::cerr<<"HTTP request failed with status code: "<<httpStatusCode<<std::endl;
+            std::cerr<<"HTTP request to "<<request.path<<" failed with status code: "<<httpStatusCode<<std::endl;
             std::cout<<"Retrying after 5 seconds"<<std::endl;
             sleep(5);
         }
+        else
+        {
+            return { httpStatusCode, response };
+        }        
     }
 }
 

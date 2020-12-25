@@ -27,9 +27,9 @@ void Start()
 	handler.WaitUntilInitializationHandled();
 	std::cout<<"Initializing completed."<<std::endl;
 
+	std::thread handleDevicePropertyChangeRequest(Handler::HandleDevicePropertyChangeRequest, &handler);
 	while (!exiting)
-	{
-		std::cout<<"Waiting ..."<<std::endl;
+	{		
 		sleep(5);
 	}
 
@@ -47,10 +47,6 @@ void Test()
 	std::cout<<"Running self-test ..."<<std::endl;
 
 	Handler stateHolder;
-
-	// EnqueueHttpMessageToAgent(HttpRequest(""));
-	// EnqueueHttpMessageToAgent(HttpRequest(""));
-	// EnqueueHttpMessageToAgent(HttpRequest(""));
 
 	std::this_thread::sleep_for (std::chrono::seconds(1));
 }

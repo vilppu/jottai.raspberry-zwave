@@ -17,7 +17,7 @@ struct DeviceDatum
         const std::string maximumValue)
     : propertyId(propertyId),
       propertyTypeId(propertyTypeId),
-      propertyName(propertyId),
+      propertyName(propertyName),
       propertyDescription(propertyDescription),
       protocol(protocol),
       unitOfMeasurement(unitOfMeasurement),
@@ -77,12 +77,58 @@ struct DeviceData
     const std::string timestamp;
 };
 
+struct DevicePropertyChangeRequest
+{
+    DevicePropertyChangeRequest(
+        const std::string gatewayId,
+        const std::string deviceId,
+        const std::string propertyId,
+        const std::string propertyValue)
+    : isRequested(true),
+      gatewayId(gatewayId),
+      deviceId(deviceId),
+      propertyId(propertyId),
+      propertyValue(propertyValue)
+    {        
+    }
+
+    DevicePropertyChangeRequest()
+    : isRequested(false)
+    {        
+    }
+
+    static DevicePropertyChangeRequest Parse(const std::string json)    
+    {
+        std::regex responseRegex ("\\{\\s*\"gatewayId\":\\s*\"(\\w+)\",\\s*\"deviceId\":\\s*\"(\\w+)\",\\s*\"propertyId\":\\s*\"(\\w+)\",\\s*\"propertyValue\":\\s*\"(\\w+)\"\\s*\\}");
+        std::smatch result; 
+        std::regex_match(json, result, responseRegex);
+
+        if(result.size() == 5)
+        {
+            const auto gatewayId = result[1];
+            const auto deviceId = result[2];
+            const auto propertyId = result[3];
+            const auto propertyValue = result[4];
+
+            return DevicePropertyChangeRequest(gatewayId, deviceId, propertyId, propertyValue);
+        }
+
+        return DevicePropertyChangeRequest();
+    }
+
+    const bool isRequested;
+    const std::string gatewayId;
+    const std::string deviceId;
+    const std::string propertyId;
+    const std::string propertyValue;
+};
+
 struct Agent
 {
     Http http;
-    const std::string path = "sensor-data";
+    const std::string path = "device-data";
 
-    void SendSensorDataEvent(std::string gatewayId, DeviceData sensorData)
+    void SendDeviceData(std::string gatewayId, DeviceData sensorData)
     {       
         std::stringstream json;
 
@@ -124,6 +170,22 @@ struct Agent
         <<"  ],"
         <<"}";
 
-        http.EnqueueHttpMessageToAgent(HttpRequest(path, json));
+        http.EnqueueHttpMessageToAgent(HttpRequest(path, json, true, 20));
+    }
+
+    DevicePropertyChangeRequest GetDevicePropertyChangeRequest()
+    {
+        const long serverTimeout = 60;
+
+        auto [httpStatusCode, response] = SendToAgent(HttpRequest("device-property-change-request", "", false, serverTimeout + 10));
+
+        if(httpStatusCode == 200)
+        {
+            return DevicePropertyChangeRequest::Parse(response);
+        }
+        else
+        {
+            return DevicePropertyChangeRequest();
+        }
     }
 };

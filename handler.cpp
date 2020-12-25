@@ -2,52 +2,16 @@
 #include "dependencies.cpp"
 
 void LogNotification(const std::string message, OpenZWave::Notification const& notification)
-{
-	// std::cout<<message<<std::endl;
+{	
 }
 
 void LogNode(const std::string message, OpenZWave::Notification const& notification)
 {
-	auto homeId = notification.GetHomeId();
-	auto nodeId = notification.GetNodeId();	
-	
-	std::cout<<"-- "<<message<<" "<<(int)nodeId<<" --"<<std::endl;
-	// std::cout<<"GetNodeName: "<<OpenZWave::Manager::Get()->GetNodeName(homeId, nodeId)<<std::endl;
-	// std::cout<<"ManufacturerName: "<<OpenZWave::Manager::Get()->GetNodeManufacturerName(homeId, nodeId)<<std::endl;
-	// std::cout<<"NodeProductName: "<<OpenZWave::Manager::Get()->GetNodeProductName(homeId, nodeId)<<std::endl;	
-	// std::cout<<"IsNodeZWavePlus : "<<OpenZWave::Manager::Get()->IsNodeZWavePlus (homeId, nodeId)<<std::endl;	
-	// std::cout<<"GetNodeBasicString: "<<OpenZWave::Manager::Get()->GetNodeBasicString(homeId, nodeId)<<std::endl;
-	// std::cout<<"GetNodeGenericString: "<<OpenZWave::Manager::Get()->GetNodeGenericString(homeId, nodeId)<<std::endl;
-	// std::cout<<"GetNodeSpecificString : "<<OpenZWave::Manager::Get()->GetNodeSpecificString (homeId, nodeId)<<std::endl;	
-	// std::cout<<"GetNodeDeviceTypeString: "<<OpenZWave::Manager::Get()->GetNodeDeviceTypeString(homeId, nodeId)<<std::endl;
-	// std::cout<<"GetNodeRoleString: "<<OpenZWave::Manager::Get()->GetNodeRoleString(homeId, nodeId)<<std::endl;
-	// std::cout<<"GetNodePlusTypeString : "<<OpenZWave::Manager::Get()->GetNodePlusTypeString (homeId, nodeId)<<std::endl;
-	// std::cout<<std::endl;	
+	std::cout<<"-- "<<message<<" "<<(int)notification.GetNodeId()<<" --"<<std::endl;
 }
 
 void LogNodeValue(const std::string message, OpenZWave::Notification const& notification)
 {
-	// auto homeId = notification.GetHomeId();
-	// auto nodeId = notification.GetNodeId();
-	// auto valueId = notification.GetValueID();
-
-	// std::cout<<"-- "<<message<<" "<<(int)nodeId<<" --"<<std::endl;	
-	// std::cout<<"NodeId: "<<(int)nodeId<<std::endl;
-	// std::cout<<"GetValueID().GetAsString(): "<<valueId.GetAsString()<<std::endl;
-	// std::cout<<"GetValueID().GetTypeAsString(): "<<valueId.GetTypeAsString()<<std::endl;
-	// std::cout<<"GetValueID().GetGenreAsString(): "<<valueId.GetGenreAsString()<<std::endl;	
-	// std::cout<<"GetValueHelp(): "<<OpenZWave::Manager::Get()->GetValueHelp(valueId)<<std::endl;
-	// std::cout<<"GetValueLabel(): "<<OpenZWave::Manager::Get()->GetValueLabel(valueId)<<std::endl;
-	// std::cout<<"GetValueUnits(): "<<OpenZWave::Manager::Get()->GetValueUnits(valueId)<<std::endl;
-	// std::cout<<"GetValueMin(): "<<OpenZWave::Manager::Get()->GetValueMin(valueId)<<std::endl;
-	// std::cout<<"GetValueMax(): "<<OpenZWave::Manager::Get()->GetValueMax(valueId)<<std::endl;
-	// std::cout<<"GetCommandClassId(): "<<(int)valueId.GetCommandClassId()<<std::endl;
-	// std::cout<<"GetCommandClassName(): "<<OpenZWave::Manager::Get()->GetCommandClassName(valueId.GetCommandClassId())<<std::endl;
-	
-	// std::string stringValue;
-	// OpenZWave::Manager::Get()->GetValueAsString(valueId, &stringValue);
-	// std::cout<<"GetValueAsString(): "<<stringValue<<std::endl;
-	// std::cout<<std::endl;
 }
 
 struct Handler
@@ -69,13 +33,12 @@ struct Handler
 	{
 		LogNodeValue("OnValueAdded", notification);
 
-		auto newState = Reduce(notification, *state);
-		auto sensorData = ToSensorData(notification);
+		const auto newState = Reduce(notification, *state);
 		const auto homeId = notification.GetHomeId();
-		const auto home = newState.homes.find(homeId)->second;
 		const auto gatewayId = std::to_string(homeId);
+		const auto sensorData = ToSensorData(notification);
 
-		agent.SendSensorDataEvent(gatewayId, sensorData);
+		agent.SendDeviceData(gatewayId, sensorData);
 
 		return newState;
 	}
@@ -93,40 +56,26 @@ struct Handler
 	{
 		LogNodeValue("OnValueChanged", notification);
 
-		auto newState = Reduce(notification, *state);
-		auto sensorData = ToSensorData(notification);
+		const auto newState = Reduce(notification, *state);
 		const auto homeId = notification.GetHomeId();
-		const auto home = newState.homes.find(homeId)->second;
 		const auto gatewayId = std::to_string(homeId);
+		const auto sensorData = ToSensorData(notification);
 
-		agent.SendSensorDataEvent(gatewayId, sensorData);
+		agent.SendDeviceData(gatewayId, sensorData);
 
 		return newState;
-		
-		// if(valueId.GetCommandClassId() == 0x25)
-		// {
-		// 	bool on;
-		// 	OpenZWave::Manager::Get()->GetValueAsBool(valueId, &on);
-
-		// 	if(on)
-		// 	{
-		// 		std::cout<<"switching off"<<std::endl;
-		// 		OpenZWave::Manager::Get()->SetValue(valueId, false);
-		// 	}
-		// }
 	}
 
 	State OnValueRefreshed(OpenZWave::Notification const& notification)
 	{
 		LogNodeValue("OnValueRefreshed", notification);
 		
-		auto newState = Reduce(notification, *state);
-		auto sensorData = ToSensorData(notification);
+		const auto newState = Reduce(notification, *state);
 		const auto homeId = notification.GetHomeId();
-		const auto home = newState.homes.find(homeId)->second;
 		const auto gatewayId = std::to_string(homeId);
+		const auto sensorData = ToSensorData(notification);
 
-		agent.SendSensorDataEvent(gatewayId, sensorData);
+		agent.SendDeviceData(gatewayId, sensorData);
 
 		return newState;
 	}
@@ -443,5 +392,28 @@ struct Handler
 		auto handler = static_cast<Handler*>(context);
 
 		handler->HandleAndSetState(*notification);
+	}
+	
+	static void HandleDevicePropertyChangeRequest(Handler *self)
+	{
+		std::cout<<"Handling device property change requests"<<std::endl;
+
+		while (!exiting)
+		{		
+			auto devicePropertyChangeRequest = self->agent.GetDevicePropertyChangeRequest();
+
+			if(devicePropertyChangeRequest.isRequested)
+			{
+				std::scoped_lock lock(self->mutex);			
+
+				const auto homeId = std::stoul(devicePropertyChangeRequest.gatewayId);
+				const auto nodeId = std::stoul(devicePropertyChangeRequest.deviceId);
+				const auto id = std::stoull(devicePropertyChangeRequest.propertyId);
+				const auto valueId = self->state->GetValueId(homeId, nodeId, id);
+				const auto on = devicePropertyChangeRequest.propertyValue == "True";
+
+				OpenZWave::Manager::Get()->SetValue(valueId, on);
+			}
+		}
 	}
 };
