@@ -168,6 +168,8 @@ std::tuple<long, const std::string> TryToSendToAgent(HttpRequest request)
         auto content = request.jsonContent.c_str();
         auto authorization = std::string("Authorization: Bearer ") + apiToken;
 
+        std::cout << content << std::endl;
+
         headers = curl_slist_append(headers, "Accept: application/json");
         headers = curl_slist_append(headers, "Content-Type: application/json");
         headers = curl_slist_append(headers, "charsets: utf-8");

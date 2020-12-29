@@ -12,7 +12,6 @@ void LogNode(const std::string message, OpenZWave::Notification const &notificat
 
 void LogNodeValue(const std::string message, OpenZWave::Notification const &notification)
 {
-	std::cout << "-- " << message << " " << (int)notification.GetNodeId() << " --" << std::endl;
 }
 
 struct Handler

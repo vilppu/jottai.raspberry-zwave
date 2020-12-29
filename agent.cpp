@@ -2,7 +2,7 @@
 #include "dependencies.cpp"
 
 struct DeviceDatum
-{    
+{
     DeviceDatum(
         const std::string propertyId,
         const std::string propertyTypeId,
@@ -15,18 +15,18 @@ struct DeviceDatum
         const std::string formattedValue,
         const std::string minimumValue,
         const std::string maximumValue)
-    : propertyId(propertyId),
-      propertyTypeId(propertyTypeId),
-      propertyName(propertyName),
-      propertyDescription(propertyDescription),
-      protocol(protocol),
-      unitOfMeasurement(unitOfMeasurement),
-      valueType(valueType),
-      value(value),
-      formattedValue(formattedValue),
-      minimumValue(minimumValue),
-      maximumValue(maximumValue)
-    {        
+        : propertyId(propertyId),
+          propertyTypeId(propertyTypeId),
+          propertyName(propertyName),
+          propertyDescription(propertyDescription),
+          protocol(protocol),
+          unitOfMeasurement(unitOfMeasurement),
+          valueType(valueType),
+          value(value),
+          formattedValue(formattedValue),
+          minimumValue(minimumValue),
+          maximumValue(maximumValue)
+    {
     }
 
     const std::string propertyId;
@@ -54,16 +54,16 @@ struct DeviceData
         const std::string batteryVoltage,
         const std::string rssi,
         const std::string timestamp)
-    : gatewayId(gatewayId),
-      channel(channel),
-      deviceId(deviceId),
-      manufacturerName(manufacturerName),
-      deviceName(deviceName),
-      data(data),
-      batteryVoltage(batteryVoltage),
-      rssi(rssi),
-      timestamp(timestamp)
-    {        
+        : gatewayId(gatewayId),
+          channel(channel),
+          deviceId(deviceId),
+          manufacturerName(manufacturerName),
+          deviceName(deviceName),
+          data(data),
+          batteryVoltage(batteryVoltage),
+          rssi(rssi),
+          timestamp(timestamp)
+    {
     }
 
     const std::string gatewayId;
@@ -84,26 +84,26 @@ struct DevicePropertyChangeRequest
         const std::string deviceId,
         const std::string propertyId,
         const std::string propertyValue)
-    : isRequested(true),
-      gatewayId(gatewayId),
-      deviceId(deviceId),
-      propertyId(propertyId),
-      propertyValue(propertyValue)
-    {        
+        : isRequested(true),
+          gatewayId(gatewayId),
+          deviceId(deviceId),
+          propertyId(propertyId),
+          propertyValue(propertyValue)
+    {
     }
 
     DevicePropertyChangeRequest()
-    : isRequested(false)
-    {        
+        : isRequested(false)
+    {
     }
 
-    static DevicePropertyChangeRequest Parse(const std::string json)    
+    static DevicePropertyChangeRequest Parse(const std::string json)
     {
-        std::regex responseRegex ("\\{\\s*\"gatewayId\":\\s*\"(\\w+)\",\\s*\"deviceId\":\\s*\"(\\w+)\",\\s*\"propertyId\":\\s*\"(\\w+)\",\\s*\"propertyValue\":\\s*\"(\\w+)\"\\s*\\}");
-        std::smatch result; 
+        std::regex responseRegex("\\{\\s*\"gatewayId\":\\s*\"(\\w+)\",\\s*\"deviceId\":\\s*\"(\\w+)\",\\s*\"propertyId\":\\s*\"(\\w+)\",\\s*\"propertyValue\":\\s*\"(\\w+)\"\\s*\\}");
+        std::smatch result;
         std::regex_match(json, result, responseRegex);
 
-        if(result.size() == 5)
+        if (result.size() == 5)
         {
             const auto gatewayId = result[1];
             const auto deviceId = result[2];
@@ -129,46 +129,47 @@ struct Agent
     const std::string path = "device-data";
 
     void SendDeviceData(std::string gatewayId, DeviceData sensorData)
-    {       
+    {
         std::stringstream json;
 
         json
-        <<"{ "
-        <<"  \"gatewayId\": \""<<sensorData.gatewayId<<"\","
-        <<"  \"channel\": \""<<sensorData.channel<<"\","
-        <<"  \"deviceId\": \""<<sensorData.deviceId<<"\","
-        <<"  \"sensorId\": \""<<sensorData.deviceId<<"\","
-        <<"  \"manufacturerName\": \""<<sensorData.manufacturerName<<"\","
-        <<"  \"batteryVoltage\": \""<<sensorData.batteryVoltage<<"\","
-        <<"  \"rssi\": \""<<sensorData.rssi<<"\","
-        <<"  \"timestamp\": \""<<sensorData.timestamp<<"\","
-        <<"  \"data\": [";
+            << "{ "
+            << "  \"gatewayId\": \"" << sensorData.gatewayId << "\","
+            << "  \"channel\": \"" << sensorData.channel << "\","
+            << "  \"deviceId\": \"" << sensorData.deviceId << "\","
+            << "  \"sensorId\": \"" << sensorData.deviceId << "\","
+            << "  \"manufacturerName\": \"" << sensorData.manufacturerName << "\","
+            << "  \"batteryVoltage\": \"" << sensorData.batteryVoltage << "\","
+            << "  \"rssi\": \"" << sensorData.rssi << "\","
+            << "  \"timestamp\": \"" << sensorData.timestamp << "\","
+            << "  \"data\": [";
 
-        for(auto& datum : sensorData.data)
+        for (auto &datum : sensorData.data)
         {
             json
-            <<"  {"
-            <<"    \"propertyId\": \""<<datum.propertyId<<"\","
-            <<"    \"propertyTypeId\": \""<<datum.propertyTypeId<<"\","
-            <<"    \"propertyName\": \""<<datum.propertyName<<"\","
-            <<"    \"propertyDescription\": \""<<datum.propertyDescription<<"\","
-            <<"    \"protocol\": \""<<datum.protocol<<"\","
-            <<"    \"unitOfMeasurement\": \""<<datum.unitOfMeasurement<<"\","
-            <<"    \"valueType\": \""<<datum.valueType<<"\","
-            <<"    \"value\": \""<<datum.value<<"\","
-            <<"    \"formattedValue\": \""<<datum.formattedValue<<"\","
-            <<"    \"minimumValue\": \""<<datum.minimumValue<<"\","
-            <<"    \"maximumValue\": \""<<datum.maximumValue<<"\""
-            <<"  }";
+                << "  {"
+                << "    \"propertyId\": \"" << datum.propertyId << "\","
+                << "    \"propertyTypeId\": \"" << datum.propertyTypeId << "\","
+                << "    \"propertyName\": \"" << datum.propertyName << "\","
+                << "    \"propertyDescription\": \"" << datum.propertyDescription << "\","
+                << "    \"protocol\": \"" << datum.protocol << "\","
+                << "    \"unitOfMeasurement\": \"" << datum.unitOfMeasurement << "\","
+                << "    \"valueType\": \"" << datum.valueType << "\","
+                << "    \"value\": \"" << datum.value << "\","
+                << "    \"formattedValue\": \"" << datum.formattedValue << "\","
+                << "    \"minimumValue\": \"" << datum.minimumValue << "\","
+                << "    \"maximumValue\": \"" << datum.maximumValue << "\""
+                << "  }";
 
-            if(&datum != &sensorData.data.back()) {
-                json<<",";
+            if (&datum != &sensorData.data.back())
+            {
+                json << ",";
             }
         }
 
         json
-        <<"  ],"
-        <<"}";
+            << "  ],"
+            << "}";
 
         http.EnqueueHttpMessageToAgent(HttpRequest(path, json, true, 20));
     }
@@ -179,7 +180,10 @@ struct Agent
 
         auto [httpStatusCode, response] = SendToAgent(HttpRequest("device-property-change-request", "", false, serverTimeout + 10));
 
-        if(httpStatusCode == 200)
+        if (httpStatusCode == 200)
+            auto [httpStatusCode, response] = SendToAgent(HttpRequest("device-property-change-request", "", false, serverTimeout + 10));
+
+        if (httpStatusCode == 200)
         {
             return DevicePropertyChangeRequest::Parse(response);
         }
