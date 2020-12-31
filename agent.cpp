@@ -136,7 +136,7 @@ struct Agent
             << "{ "
             << "  \"gatewayId\": \"" << sensorData.gatewayId << "\","
             << "  \"channel\": \"" << sensorData.channel << "\","
-            << "  \"deviceId\": \"" << sensorData.deviceId << "\","            
+            << "  \"deviceId\": \"" << sensorData.deviceId << "\","
             << "  \"manufacturerName\": \"" << sensorData.manufacturerName << "\","
             << "  \"batteryVoltage\": \"" << sensorData.batteryVoltage << "\","
             << "  \"rssi\": \"" << sensorData.rssi << "\","
@@ -179,8 +179,7 @@ struct Agent
 
         auto [httpStatusCode, response] = SendToAgent(HttpRequest("device-property-change-request", "", false, serverTimeout + 10));
 
-        if (httpStatusCode == 200)
-            auto [httpStatusCode, response] = SendToAgent(HttpRequest("device-property-change-request", "", false, serverTimeout + 10));
+        std::cout << httpStatusCode << " " << response << std::endl;
 
         if (httpStatusCode == 200)
         {

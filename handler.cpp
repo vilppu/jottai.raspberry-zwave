@@ -445,7 +445,15 @@ struct Handler
 				const auto valueId = self->state->GetValueId(homeId, nodeId, id);
 				const auto on = devicePropertyChangeRequest.propertyValue == "True";
 
+				std::cout << "Changin device property " << devicePropertyChangeRequest.propertyId
+						  << " to " << devicePropertyChangeRequest.propertyValue
+						  << std::endl;
+
 				OpenZWave::Manager::Get()->SetValue(valueId, on);
+			}
+			else
+			{
+				std::cout << "No requests" << std::endl;
 			}
 		}
 	}

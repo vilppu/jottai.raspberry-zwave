@@ -1,7 +1,7 @@
 #pragma once
 #include "dependencies.cpp"
 
-const auto apiToken = std::string(getenv("JOTTAI_API_TOKEN"));
+std::string accessToken = "";
 
 struct HttpRequest
 {
@@ -41,15 +41,6 @@ CURLcode ExecuteWithLogging(CURL *curl)
     return LogErrors(curl_easy_perform(curl));
 }
 
-void ExecuteWithLoggingUntilSucceed(CURL *curl)
-{
-    while (ExecuteWithLogging(curl) != CURLE_OK && !exiting)
-    {
-        std::cout << "Retrying after 5 seconds" << std::endl;
-        sleep(5);
-    }
-}
-
 size_t CurlStoreReponseCallback(char *ptr, size_t size, size_t nmemb, std::string *response)
 {
     auto totalSize = size * nmemb;
@@ -75,84 +66,77 @@ bool NotSuccess(long httpStatusCode)
     return httpStatusCode < 200 || httpStatusCode > 299;
 }
 
-// void RefreshBearerToken()
-// {
-//     auto curl = curl_easy_init();
+void RefreshAccessToken()
+{
+    auto curl = curl_easy_init();
 
-//     if(curl)
-//     {
-//         std::string response = "";
-//         std::string tokenUrl = getenv("JOTTAI_TOKEN_URL");
-//         std::string grantType = "client_credentials";
-//         std::string clientId = getenv("JOTTAI_CLIENT_ID");
-//         std::string clientSecret = getenv("JOTTAI_CLIENT_SECRET");
-//         std::string audience = getenv("JOTTAI_AUDIENCE");
-//         std::string scope = "DeviceGroupId";
+    if (curl)
+    {
+        auto refreshToken = std::string(getenv("JOTTAI_REFRESH_TOKEN"));
+        auto apiHost = std::string(getenv("JOTTAI_API_HOST"));
+        auto url = apiHost + "user/tokens/access-token/";
+        std::string response = "";
 
-//         std::stringstream json;
-//         json
-//         <<"{ "
-//         <<"  \"grant_type\": \""<<grantType<<"\","
-//         <<"  \"client_id\": \""<<clientId<<"\","
-//         <<"  \"client_secret\": \""<<clientSecret<<"\","
-//         <<"  \"audience\": \""<<audience<<"\","
-//         <<"  \"scope\": \""<<scope<<"\""
-//         <<"}";
+        std::stringstream json;
+        json
+            << "{ "
+            << "  \"refreshToken\": \"" << refreshToken << "\""
+            << "}";
 
-//         long httpStatusCode = 0;
-//         struct curl_slist *headers = NULL;
-//         auto jsonBody = json.str();
-//         auto content = jsonBody.c_str();
+        long httpStatusCode = 0;
+        struct curl_slist *headers = NULL;
+        auto jsonBody = json.str();
+        auto content = jsonBody.c_str();
 
-//         headers = curl_slist_append(headers, "Accept: application/json");
-//         headers = curl_slist_append(headers, "Content-Type: application/json");
-//         headers = curl_slist_append(headers, "charsets: utf-8");
+        headers = curl_slist_append(headers, "Accept: application/json");
+        headers = curl_slist_append(headers, "Content-Type: application/json");
+        headers = curl_slist_append(headers, "charsets: utf-8");
 
-//         LogErrors(curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers));
+        LogErrors(curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers));
 
-//         curl_easy_setopt(curl, CURLOPT_TIMEOUT, 20L);
-//         curl_easy_setopt(curl, CURLOPT_URL, "https://vilppu.eu.auth0.com/oauth/token");
-//         curl_easy_setopt(curl, CURLOPT_POST, 1L);
-//         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, content);
-//         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-//         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-//         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlStoreReponseCallback);
-//         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+        curl_easy_setopt(curl, CURLOPT_TIMEOUT, 20L);
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+        curl_easy_setopt(curl, CURLOPT_POST, 1L);
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, content);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlStoreReponseCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
 
-//         while (NotSuccess(httpStatusCode) && !exiting)
-//         {
-//             ExecuteWithLoggingUntilSucceed(curl);
-//             LogErrors(curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpStatusCode));
+        while (NotSuccess(httpStatusCode) && !exiting)
+        {
+            ExecuteWithLogging(curl);
+            LogErrors(curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpStatusCode));
 
-//             if (NotSuccess(httpStatusCode))
-//             {
-//                 std::cerr<<"Fetching bearer token failed with status code: "<<httpStatusCode<<std::endl;
-//                 std::cout<<"Retrying after 5 seconds"<<std::endl;
-//                 sleep(5);
-//             }
-//         }
+            if (NotSuccess(httpStatusCode))
+            {
+                std::cerr << "Fetching access token failed with status code: " << httpStatusCode << std::endl;
+                std::cout << "Retrying after 5 seconds" << std::endl;
+                sleep(5);
+            }
+        }
 
-//         std::regex accessTokenRegex (".*\"access_token\"\\s*:\\s*\"([^\"]+)\".*");
-//         std::smatch accessTokenResult;
-//         std::regex_match(response, accessTokenResult, accessTokenRegex);
+        std::regex accessTokenRegex(".*\"accessToken\"\\s*:\\s*\"([^\"]+)\".*");
+        std::smatch accessTokenResult;
+        std::regex_match(response, accessTokenResult, accessTokenRegex);
 
-//         if(accessTokenResult.size() == 2)
-//         {
-//             bearerToken = accessTokenResult[1];
-//         }
-//         else
-//         {
-//             std::cerr<<"Could not parse bearer token"<<std::endl;
-//         }
+        if (accessTokenResult.size() == 2)
+        {
+            accessToken = accessTokenResult[1];
+        }
+        else
+        {
+            std::cerr << "Could not parse bearer token" << std::endl;
+        }
 
-//         curl_easy_cleanup(curl);
-//         curl_slist_free_all(headers);
-//     }
-//     else
-//     {
-//         std::cerr<<"failed to initialize libcurl"<<std::endl;
-//     }
-// }
+        curl_easy_cleanup(curl);
+        curl_slist_free_all(headers);
+    }
+    else
+    {
+        std::cerr << "failed to initialize libcurl" << std::endl;
+    }
+}
 
 std::tuple<long, const std::string> TryToSendToAgent(HttpRequest request)
 {
@@ -166,9 +150,7 @@ std::tuple<long, const std::string> TryToSendToAgent(HttpRequest request)
         long httpStatusCode = 0;
         struct curl_slist *headers = NULL;
         auto content = request.jsonContent.c_str();
-        auto authorization = std::string("Authorization: Bearer ") + apiToken;
-
-        std::cout << content << std::endl;
+        auto authorization = std::string("Authorization: Bearer ") + accessToken;
 
         headers = curl_slist_append(headers, "Accept: application/json");
         headers = curl_slist_append(headers, "Content-Type: application/json");
@@ -187,7 +169,7 @@ std::tuple<long, const std::string> TryToSendToAgent(HttpRequest request)
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlStoreReponseCallback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
-        ExecuteWithLoggingUntilSucceed(curl);
+        ExecuteWithLogging(curl);
         LogErrors(curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpStatusCode));
         curl_easy_cleanup(curl);
         curl_slist_free_all(headers);
@@ -205,8 +187,9 @@ std::tuple<long, const std::string> TryToSendToAgent(HttpRequest request)
 std::tuple<long, const std::string> SendToAgent(HttpRequest request)
 {
     int httpStatusCode = 0;
+    int maxTries = 5;
 
-    while (true)
+    for (int i = 0; i < maxTries; i++)
     {
         auto [httpStatusCode, response] = TryToSendToAgent(request);
 
@@ -214,18 +197,18 @@ std::tuple<long, const std::string> SendToAgent(HttpRequest request)
         {
             return {httpStatusCode, response};
         }
-        // else if (httpStatusCode == 401)
-        // {
-        //     std::cout << "Fetching a new bearer token" << std::endl;
-        //     RefreshBearerToken();
-        // }
-        // else if (httpStatusCode == 403)
-        // {
-        //     std::cout << "Access denied" << std::endl;
-        //     std::cout << "Fetching a new bearer token in 10 seconds" << std::endl;
-        //     sleep(10);
-        //     RefreshBearerToken();
-        // }
+        else if (httpStatusCode == 401)
+        {
+            std::cout << "Fetching a new access token" << std::endl;
+            RefreshAccessToken();
+        }
+        else if (httpStatusCode == 403)
+        {
+            std::cout << "Access denied" << std::endl;
+            std::cout << "Fetching a new access token in 10 seconds" << std::endl;
+            sleep(10);
+            RefreshAccessToken();
+        }
         else if (NotSuccess(httpStatusCode))
         {
             std::cerr << "HTTP request to " << request.path << " failed with status code: " << httpStatusCode << std::endl;
@@ -237,6 +220,8 @@ std::tuple<long, const std::string> SendToAgent(HttpRequest request)
             return {httpStatusCode, response};
         }
     }
+
+    return {-1, std::string()};
 }
 
 struct HttpMessagesToAgentQueue
