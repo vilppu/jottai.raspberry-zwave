@@ -5,10 +5,9 @@ struct DeviceDatum
 {
     DeviceDatum(
         const std::string propertyId,
-        const std::string propertyTypeId,
+        const std::string propertyType,
         const std::string propertyName,
         const std::string propertyDescription,
-        const std::string protocol,
         const std::string unitOfMeasurement,
         const std::string valueType,
         const std::string value,
@@ -16,10 +15,9 @@ struct DeviceDatum
         const std::string minimumValue,
         const std::string maximumValue)
         : propertyId(propertyId),
-          propertyTypeId(propertyTypeId),
+          propertyType(propertyType),
           propertyName(propertyName),
           propertyDescription(propertyDescription),
-          protocol(protocol),
           unitOfMeasurement(unitOfMeasurement),
           valueType(valueType),
           value(value),
@@ -30,10 +28,9 @@ struct DeviceDatum
     }
 
     const std::string propertyId;
-    const std::string propertyTypeId;
+    const std::string propertyType;
     const std::string propertyName;
     const std::string propertyDescription;
-    const std::string protocol;
     const std::string unitOfMeasurement;
     const std::string valueType;
     const std::string value;
@@ -46,8 +43,8 @@ struct DeviceData
 {
     DeviceData(
         const std::string gatewayId,
-        const std::string channel,
         const std::string deviceId,
+        const std::string protocol,
         const std::string manufacturerName,
         const std::string deviceName,
         const std::vector<DeviceDatum> data,
@@ -55,8 +52,8 @@ struct DeviceData
         const std::string rssi,
         const std::string timestamp)
         : gatewayId(gatewayId),
-          channel(channel),
           deviceId(deviceId),
+          protocol(protocol),
           manufacturerName(manufacturerName),
           deviceName(deviceName),
           data(data),
@@ -67,8 +64,8 @@ struct DeviceData
     }
 
     const std::string gatewayId;
-    const std::string channel;
     const std::string deviceId;
+    const std::string protocol;
     const std::string manufacturerName;
     const std::string deviceName;
     const std::vector<DeviceDatum> data;
@@ -135,8 +132,8 @@ struct Agent
         json
             << "{ "
             << "  \"gatewayId\": \"" << sensorData.gatewayId << "\","
-            << "  \"channel\": \"" << sensorData.channel << "\","
             << "  \"deviceId\": \"" << sensorData.deviceId << "\","
+            << "  \"protocol\": \"" << sensorData.protocol << "\","
             << "  \"manufacturerName\": \"" << sensorData.manufacturerName << "\","
             << "  \"batteryVoltage\": \"" << sensorData.batteryVoltage << "\","
             << "  \"rssi\": \"" << sensorData.rssi << "\","
@@ -148,10 +145,9 @@ struct Agent
             json
                 << "  {"
                 << "    \"propertyId\": \"" << datum.propertyId << "\","
-                << "    \"propertyTypeId\": \"" << datum.propertyTypeId << "\","
+                << "    \"propertyType\": \"" << datum.propertyType << "\","
                 << "    \"propertyName\": \"" << datum.propertyName << "\","
                 << "    \"propertyDescription\": \"" << datum.propertyDescription << "\","
-                << "    \"protocol\": \"" << datum.protocol << "\","
                 << "    \"unitOfMeasurement\": \"" << datum.unitOfMeasurement << "\","
                 << "    \"valueType\": \"" << datum.valueType << "\","
                 << "    \"value\": \"" << datum.value << "\","
@@ -167,7 +163,7 @@ struct Agent
         }
 
         json
-            << "  ],"
+            << "  ]"
             << "}";
 
         http.EnqueueHttpMessageToAgent(HttpRequest(path, json, true, 20));
