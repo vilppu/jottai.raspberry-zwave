@@ -12,27 +12,50 @@ void LogNode(const std::string message, OpenZWave::Notification const &notificat
 
 void LogNodeValue(const std::string message, OpenZWave::Notification const &notification)
 {
+	std::cout << "-- " << message << " " << (int)notification.GetNodeId() << " --" << std::endl;
 }
 
-void LogNodeDetails(const std::string message, OpenZWave::Notification const &notification)
+void LogNodeAdded(const std::string message, OpenZWave::Notification const &notification)
 {
 
 	const auto homeId = notification.GetHomeId();
 	const auto nodeId = (int)notification.GetNodeId();
 	const auto valueId = notification.GetValueID();
+	auto  value = std::string();
 
-	std::cout << "-- " << message << " " << (int)notification.GetNodeId() << " --" << std::endl;
-	std::cout << "Id: " << (int)valueId.GetId()<< std::endl;
-	std::cout << "CommandClassId: " << std::hex << (int)valueId.GetCommandClassId()<< std::endl;
-	std::cout << "CommandClassName: " << OpenZWave::Manager::Get()->GetCommandClassName(valueId.GetCommandClassId())<< std::endl;
+	OpenZWave::Manager::Get()->GetValueAsString(valueId, &value);
+
+	std::cout << "Node: " << (int)notification.GetNodeId() << " Value: "<< (int)valueId.GetId()<< std::endl;
+	std::cout << "CommandClass: " << std::hex << (int)valueId.GetCommandClassId() << " " << OpenZWave::Manager::Get()->GetCommandClassName(valueId.GetCommandClassId())<< std::endl;
 	std::cout << "ValueLabel: " << OpenZWave::Manager::Get()->GetValueLabel(valueId) << std::endl;
 	std::cout << "ValueHelp: " << OpenZWave::Manager::Get()->GetValueHelp(valueId) << std::endl;
-	std::cout << "IsZWavePlus: " << OpenZWave::Manager::Get()->IsNodeZWavePlus(homeId, nodeId) << std::endl;
 	std::cout << "ValueUnits: " << OpenZWave::Manager::Get()->GetValueUnits(valueId) << std::endl;
 	std::cout << "Type: " << valueId.GetTypeAsString() << std::endl;
 	std::cout << "Genre: " << valueId.GetGenreAsString() << std::endl;
+	std::cout << "Value: " << value << std::endl;
 	std::cout << "Min: " << OpenZWave::Manager::Get()->GetValueMin(valueId) << std::endl;
 	std::cout << "Max: " << OpenZWave::Manager::Get()->GetValueMax(valueId) << std::endl;
+	std::cout << "IsZWavePlus: " << OpenZWave::Manager::Get()->IsNodeZWavePlus(homeId, nodeId) << std::endl;
+	std::cout << std::endl;
+}
+
+void LogNodeValueChanged(const std::string message, OpenZWave::Notification const &notification)
+{
+
+	const auto homeId = notification.GetHomeId();
+	const auto nodeId = (int)notification.GetNodeId();
+	const auto valueId = notification.GetValueID();
+	auto  value = std::string();
+
+	OpenZWave::Manager::Get()->GetValueAsString(valueId, &value);
+
+	std::cout << "Node: " << (int)notification.GetNodeId() << " Value: "<< (int)valueId.GetId()<< std::endl;
+	std::cout << "CommandClass: " << std::hex << (int)valueId.GetCommandClassId() << " " << OpenZWave::Manager::Get()->GetCommandClassName(valueId.GetCommandClassId())<< std::endl;
+	std::cout << "ValueLabel: " << OpenZWave::Manager::Get()->GetValueLabel(valueId) << std::endl;
+	std::cout << "ValueUnits: " << OpenZWave::Manager::Get()->GetValueUnits(valueId) << std::endl;
+	std::cout << "Type: " << valueId.GetTypeAsString() << std::endl;
+	std::cout << "Value: " << value << std::endl;
+	std::cout << std::endl;
 }
 
 struct Handler
@@ -52,7 +75,7 @@ struct Handler
 
 	State OnValueAdded(OpenZWave::Notification const &notification)
 	{
-		LogNodeValue("OnValueAdded", notification);
+		LogNodeAdded("OnValueAdded", notification);
 
 		const auto newState = Reduce(notification, *state);
 		const auto homeId = notification.GetHomeId();
@@ -75,7 +98,7 @@ struct Handler
 
 	State OnValueChanged(OpenZWave::Notification const &notification)
 	{
-		LogNodeValue("OnValueChanged", notification);
+		LogNodeValueChanged("OnValueChanged", notification);
 
 		const auto newState = Reduce(notification, *state);
 		const auto homeId = notification.GetHomeId();
@@ -474,7 +497,6 @@ struct Handler
 			}
 			else
 			{
-				std::cout << "No requests" << std::endl;
 			}
 		}
 	}

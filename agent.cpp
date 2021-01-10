@@ -175,8 +175,6 @@ struct Agent
 
         auto [httpStatusCode, response] = SendToAgent(HttpRequest("device-property-change-request", "", false, serverTimeout + 10));
 
-        std::cout << httpStatusCode << " " << response << std::endl;
-
         if (httpStatusCode == 200)
         {
             return DevicePropertyChangeRequest::Parse(response);
