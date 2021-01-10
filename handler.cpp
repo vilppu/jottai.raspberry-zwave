@@ -14,6 +14,27 @@ void LogNodeValue(const std::string message, OpenZWave::Notification const &noti
 {
 }
 
+void LogNodeDetails(const std::string message, OpenZWave::Notification const &notification)
+{
+
+	const auto homeId = notification.GetHomeId();
+	const auto nodeId = (int)notification.GetNodeId();
+	const auto valueId = notification.GetValueID();
+
+	std::cout << "-- " << message << " " << (int)notification.GetNodeId() << " --" << std::endl;
+	std::cout << "Id: " << (int)valueId.GetId()<< std::endl;
+	std::cout << "CommandClassId: " << std::hex << (int)valueId.GetCommandClassId()<< std::endl;
+	std::cout << "CommandClassName: " << OpenZWave::Manager::Get()->GetCommandClassName(valueId.GetCommandClassId())<< std::endl;
+	std::cout << "ValueLabel: " << OpenZWave::Manager::Get()->GetValueLabel(valueId) << std::endl;
+	std::cout << "ValueHelp: " << OpenZWave::Manager::Get()->GetValueHelp(valueId) << std::endl;
+	std::cout << "IsZWavePlus: " << OpenZWave::Manager::Get()->IsNodeZWavePlus(homeId, nodeId) << std::endl;
+	std::cout << "ValueUnits: " << OpenZWave::Manager::Get()->GetValueUnits(valueId) << std::endl;
+	std::cout << "Type: " << valueId.GetTypeAsString() << std::endl;
+	std::cout << "Genre: " << valueId.GetGenreAsString() << std::endl;
+	std::cout << "Min: " << OpenZWave::Manager::Get()->GetValueMin(valueId) << std::endl;
+	std::cout << "Max: " << OpenZWave::Manager::Get()->GetValueMax(valueId) << std::endl;
+}
+
 struct Handler
 {
 	Agent agent;
