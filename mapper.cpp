@@ -96,7 +96,7 @@ const std::string CommandClassIdToPropertyType(const int commandClassId)
 	case 0x30:
 		return "NotSpecified"; // SensorBinary COMMAND_CLASS_SENSOR_BINARY
 	case 0x31:
-		return "NotSpecified"; // SensorMultilevel COMMAND_CLASS_SENSOR_MULTILEVEL
+		return "Sensor"; // SensorMultilevel COMMAND_CLASS_SENSOR_MULTILEVEL
 	case 0x79:
 		return "NotSpecified"; // SoundSwitch COMMAND_CLASS_SOUND_SWITCH
 	case 0x27:
