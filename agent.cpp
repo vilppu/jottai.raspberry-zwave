@@ -166,6 +166,8 @@ struct Agent
             << "  ]"
             << "}";
 
+        std::cout<<json.str()<<std::endl;
+
         http.EnqueueHttpMessageToAgent(HttpRequest(path, json, true, 20));
     }
 

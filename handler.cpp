@@ -3,17 +3,20 @@
 
 void LogNotification(const std::string message, OpenZWave::Notification const &notification)
 {
+	return;
 	std::cout << "-- " << message << " " << (int)notification.GetNodeId() << " --" << std::endl;
 }
 
 void LogNodeId(const std::string message, OpenZWave::Notification const &notification)
 {
+	return;
 	std::cout << "-- " << message << " " << (int)notification.GetNodeId() << " --" << std::endl;
 }
 
 void LogNodeDetails(const std::string message, OpenZWave::Notification const &notification)
 {
 
+	return;
 	const auto homeId = notification.GetHomeId();
 	const auto nodeId = (int)notification.GetNodeId();
 	const auto valueId = notification.GetValueID();
@@ -38,7 +41,7 @@ void LogNodeDetails(const std::string message, OpenZWave::Notification const &no
 
 void LogNodeValue(const std::string message, OpenZWave::Notification const &notification)
 {
-
+	return;
 	const auto homeId = notification.GetHomeId();
 	const auto nodeId = (int)notification.GetNodeId();
 	const auto valueId = notification.GetValueID();
