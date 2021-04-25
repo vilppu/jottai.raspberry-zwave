@@ -12,7 +12,7 @@ std::string CurrentTime()
 	return std::string(currentTimeBuffer);
 }
 
-const std::string CommandClassIdToPropertyType(const int commandClassId)
+const std::string GetPropertyType(const int commandClassId, const std::string& valueUnits)
 {
 	// http://www.openzwave.com/dev/group__CommandClass.html
 	switch (commandClassId)
@@ -96,7 +96,19 @@ const std::string CommandClassIdToPropertyType(const int commandClassId)
 	case 0x30:
 		return "NotSpecified"; // SensorBinary COMMAND_CLASS_SENSOR_BINARY
 	case 0x31:
-		return "Sensor"; // SensorMultilevel COMMAND_CLASS_SENSOR_MULTILEVEL
+		if(valueUnits == "C")
+		{
+			return "Temperature";
+		}
+		else if(valueUnits == "MM")
+		{
+			return "SeismicIntensity";
+		}
+		else if(valueUnits == "Lux")
+		{
+			return "Luminance";
+		}
+		return "NotSpecified"; // SensorMultilevel COMMAND_CLASS_SENSOR_MULTILEVEL
 	case 0x79:
 		return "NotSpecified"; // SoundSwitch COMMAND_CLASS_SOUND_SWITCH
 	case 0x27:
@@ -142,7 +154,7 @@ DeviceData ToSensorData(OpenZWave::Notification const &notification)
 	const auto gatewayId = std::to_string(homeId);
 	const auto deviceId = std::to_string(nodeId);
 	const auto propertyId = std::to_string(valueId.GetId());
-	const auto propertyType = CommandClassIdToPropertyType(valueId.GetCommandClassId());
+	const auto propertyType = GetPropertyType(valueId.GetCommandClassId(), OpenZWave::Manager::Get()->GetValueUnits(valueId));
 	const auto propertyName = OpenZWave::Manager::Get()->GetValueLabel(valueId);
 	const auto propertyDescription = OpenZWave::Manager::Get()->GetValueHelp(valueId);
 	const auto protocol = OpenZWave::Manager::Get()->IsNodeZWavePlus(homeId, nodeId) ? "ZWavePlus" : "ZWave";
