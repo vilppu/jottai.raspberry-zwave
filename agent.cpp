@@ -142,23 +142,26 @@ struct Agent
 
         for (auto &datum : sensorData.data)
         {
-            json
-                << "  {"
-                << "    \"propertyId\": \"" << datum.propertyId << "\","
-                << "    \"propertyType\": \"" << datum.propertyType << "\","
-                << "    \"propertyName\": \"" << datum.propertyName << "\","
-                << "    \"propertyDescription\": \"" << datum.propertyDescription << "\","
-                << "    \"unitOfMeasurement\": \"" << datum.unitOfMeasurement << "\","
-                << "    \"valueType\": \"" << datum.valueType << "\","
-                << "    \"value\": \"" << datum.value << "\","
-                << "    \"formattedValue\": \"" << datum.formattedValue << "\","
-                << "    \"minimumValue\": \"" << datum.minimumValue << "\","
-                << "    \"maximumValue\": \"" << datum.maximumValue << "\""
-                << "  }";
-
-            if (&datum != &sensorData.data.back())
+            if(datum.propertyType != "NotSpecified")
             {
-                json << ",";
+                json
+                    << "  {"
+                    << "    \"propertyId\": \"" << datum.propertyId << "\","
+                    << "    \"propertyType\": \"" << datum.propertyType << "\","
+                    << "    \"propertyName\": \"" << datum.propertyName << "\","
+                    << "    \"propertyDescription\": \"" << datum.propertyDescription << "\","
+                    << "    \"unitOfMeasurement\": \"" << datum.unitOfMeasurement << "\","
+                    << "    \"valueType\": \"" << datum.valueType << "\","
+                    << "    \"value\": \"" << datum.value << "\","
+                    << "    \"formattedValue\": \"" << datum.formattedValue << "\","
+                    << "    \"minimumValue\": \"" << datum.minimumValue << "\","
+                    << "    \"maximumValue\": \"" << datum.maximumValue << "\""
+                    << "  }";
+
+                if (&datum != &sensorData.data.back())
+                {
+                    json << ",";
+                }
             }
         }
 
