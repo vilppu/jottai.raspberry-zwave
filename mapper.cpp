@@ -146,6 +146,22 @@ const std::string GetPropertyType(const int commandClassId, const std::string& v
 	}
 }
 
+const std::string ToValueType(const std::string type)
+{
+	if(type == "bool")
+	{
+		return "Boolean";
+	}
+	else if(type == "int")
+	{
+		return "Integer";
+	}
+	else
+	{
+		return "Decimal";
+	}
+}
+
 DeviceData ToSensorData(OpenZWave::Notification const &notification)
 {
 	const auto homeId = notification.GetHomeId();
@@ -159,7 +175,7 @@ DeviceData ToSensorData(OpenZWave::Notification const &notification)
 	const auto propertyDescription = OpenZWave::Manager::Get()->GetValueHelp(valueId);
 	const auto protocol = OpenZWave::Manager::Get()->IsNodeZWavePlus(homeId, nodeId) ? "ZWavePlus" : "ZWave";
 	const auto unitOfMeasurement = OpenZWave::Manager::Get()->GetValueUnits(valueId);
-	const auto valueType = valueId.GetTypeAsString();
+	const auto valueType = ToValueType(valueId.GetTypeAsString());
 	const auto minimumValue = std::to_string(OpenZWave::Manager::Get()->GetValueMin(valueId));
 	const auto maximumValue = std::to_string(OpenZWave::Manager::Get()->GetValueMax(valueId));
 	const auto batteryVoltage = "";
