@@ -209,6 +209,11 @@ std::tuple<long, const std::string> SendToAgent(HttpRequest request)
             sleep(10);
             RefreshAccessToken();
         }
+        else if (httpStatusCode == 400)
+        {
+            std::cerr << "Bad request:" << std::endl;
+            std::cerr << request.jsonContent << std::endl;
+        }
         else if (NotSuccess(httpStatusCode))
         {
             std::cerr << "HTTP request to " << request.path << " failed with status code: " << httpStatusCode << std::endl;
