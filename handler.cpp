@@ -3,13 +3,11 @@
 
 void LogNotification(const std::string message, OpenZWave::Notification const &notification)
 {
-	return;
 	std::cout << "-- " << message << " " << (int)notification.GetNodeId() << " --" << std::endl;
 }
 
 void LogNodeId(const std::string message, OpenZWave::Notification const &notification)
 {
-	return;
 	std::cout << "-- " << message << " " << (int)notification.GetNodeId() << " --" << std::endl;
 }
 
