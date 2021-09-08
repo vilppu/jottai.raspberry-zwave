@@ -249,3 +249,5 @@ config.js
 *.png
 OZW_Log.txt
 start.sh
+test.sh
+.ionide

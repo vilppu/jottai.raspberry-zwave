@@ -79,13 +79,17 @@ struct DevicePropertyChangeRequest
     DevicePropertyChangeRequest(
         const std::string gatewayId,
         const std::string deviceId,
-        const std::string propertyId,
-        const std::string propertyValue)
+        const std::string devicePartId,
+        const std::string deviceStateType,
+        const std::string valueType,
+        const std::string state)
         : isRequested(true),
           gatewayId(gatewayId),
           deviceId(deviceId),
-          propertyId(propertyId),
-          propertyValue(propertyValue)
+          devicePartId(devicePartId),
+          deviceStateType(deviceStateType),
+          valueType(valueType),
+          state(state)
     {
     }
 
@@ -96,28 +100,34 @@ struct DevicePropertyChangeRequest
 
     static DevicePropertyChangeRequest Parse(const std::string json)
     {
-        std::regex responseRegex("\\{\\s*\"gatewayId\":\\s*\"(\\w+)\",\\s*\"deviceId\":\\s*\"(\\w+)\",\\s*\"propertyId\":\\s*\"(\\w+)\",\\s*\"propertyValue\":\\s*\"(\\w+)\"\\s*\\}");
+        std::regex responseRegex("\\{\"gatewayId\":\"(\\w+)\",\"deviceId\":\"(\\w+)\",\"devicePartId\":\"(\\w+)\",\"deviceStateType\":\"(\\w+)\",\"valueType\":\"(\\w+)\",\"state\":(\\w+)\\}");
         std::smatch result;
         std::regex_match(json, result, responseRegex);
 
-        if (result.size() == 5)
+        std::cout << json << std::endl;
+        std::cout << result.size() << std::endl;
+
+        if (result.size() == 7)
         {
             const auto gatewayId = result[1];
             const auto deviceId = result[2];
-            const auto propertyId = result[3];
-            const auto propertyValue = result[4];
+            const auto devicePartId = result[3];
+            const auto deviceStateType = result[4];
+            const auto valueType = result[5];
+            const auto state = result[6];
 
-            return DevicePropertyChangeRequest(gatewayId, deviceId, propertyId, propertyValue);
+            return DevicePropertyChangeRequest(gatewayId, deviceId, devicePartId, deviceStateType, valueType, state);
         }
-
         return DevicePropertyChangeRequest();
     }
 
     const bool isRequested;
     const std::string gatewayId;
     const std::string deviceId;
-    const std::string propertyId;
-    const std::string propertyValue;
+    const std::string devicePartId;
+    const std::string deviceStateType;
+    const std::string valueType;
+    const std::string state;
 };
 
 struct Agent
@@ -166,6 +176,8 @@ struct Agent
             << "  ]"
             << "}";
 
+        // std::cout<<json.str()<<std::endl;
+
         http.EnqueueHttpMessageToAgent(HttpRequest(path, json, true, 20));
     }
 
@@ -173,7 +185,7 @@ struct Agent
     {
         const long serverTimeout = 60;
 
-        auto [httpStatusCode, response] = SendToAgent(HttpRequest("device-property-change-request", "", false, serverTimeout + 10));
+        auto [httpStatusCode, response] = SendToAgent(HttpRequest("change-device-state-request", "", false, serverTimeout + 10));
 
         if (httpStatusCode == 200)
         {

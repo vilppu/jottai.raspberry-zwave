@@ -14,6 +14,7 @@ void LogNodeId(const std::string message, OpenZWave::Notification const &notific
 void LogNodeDetails(const std::string message, OpenZWave::Notification const &notification)
 {
 
+	return;
 	const auto homeId = notification.GetHomeId();
 	const auto nodeId = (int)notification.GetNodeId();
 	const auto valueId = notification.GetValueID();
@@ -38,7 +39,7 @@ void LogNodeDetails(const std::string message, OpenZWave::Notification const &no
 
 void LogNodeValue(const std::string message, OpenZWave::Notification const &notification)
 {
-
+	return;
 	const auto homeId = notification.GetHomeId();
 	const auto nodeId = (int)notification.GetNodeId();
 	const auto valueId = notification.GetValueID();
@@ -483,12 +484,12 @@ struct Handler
 
 				const auto homeId = std::stoul(devicePropertyChangeRequest.gatewayId);
 				const auto nodeId = std::stoul(devicePropertyChangeRequest.deviceId);
-				const auto id = std::stoull(devicePropertyChangeRequest.propertyId);
+				const auto id = std::stoull(devicePropertyChangeRequest.devicePartId);
 				const auto valueId = self->state->GetValueId(homeId, nodeId, id);
-				const auto on = devicePropertyChangeRequest.propertyValue == "True";
+				const auto on = devicePropertyChangeRequest.state == "True";
 
-				std::cout << "Changin device property " << devicePropertyChangeRequest.propertyId
-						  << " to " << devicePropertyChangeRequest.propertyValue
+				std::cout << "Changin device property " << devicePropertyChangeRequest.devicePartId
+						  << " to " << devicePropertyChangeRequest.state
 						  << std::endl;
 
 				OpenZWave::Manager::Get()->SetValue(valueId, on);
