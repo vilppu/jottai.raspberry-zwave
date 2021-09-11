@@ -137,6 +137,11 @@ struct Agent
 
     void SendDeviceData(std::string gatewayId, DeviceData sensorData)
     {
+        if (sensorData.data.size() == 0)
+        {
+            return;
+        }
+
         std::stringstream json;
 
         json
