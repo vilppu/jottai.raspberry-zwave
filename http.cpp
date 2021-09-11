@@ -216,7 +216,9 @@ std::tuple<long, const std::string> SendToAgent(HttpRequest request)
         }
         else if (NotSuccess(httpStatusCode))
         {
-            std::cerr << "HTTP request to " << request.path << " failed with status code: " << httpStatusCode << std::endl;
+            const auto method = request.isPost ? "POST" : "GET";
+            std::cerr << method << " " << request.path << request.jsonContent << " failed with status code: " << httpStatusCode << std::endl;
+            std::cerr << request.jsonContent << std::endl;
             std::cout << "Retrying after 5 seconds" << std::endl;
             sleep(5);
         }
