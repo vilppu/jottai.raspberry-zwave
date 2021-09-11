@@ -80,14 +80,14 @@ struct DevicePropertyChangeRequest
         const std::string gatewayId,
         const std::string deviceId,
         const std::string devicePartId,
-        const std::string deviceStateType,
+        const std::string propertyType,
         const std::string valueType,
         const std::string state)
         : isRequested(true),
           gatewayId(gatewayId),
           deviceId(deviceId),
           devicePartId(devicePartId),
-          deviceStateType(deviceStateType),
+          propertyType(propertyType),
           valueType(valueType),
           state(state)
     {
@@ -100,7 +100,7 @@ struct DevicePropertyChangeRequest
 
     static DevicePropertyChangeRequest Parse(const std::string json)
     {
-        std::regex responseRegex("\\{\"gatewayId\":\"(\\w+)\",\"deviceId\":\"(\\w+)\",\"devicePartId\":\"(\\w+)\",\"deviceStateType\":\"(\\w+)\",\"valueType\":\"(\\w+)\",\"state\":(\\w+)\\}");
+        std::regex responseRegex("\\{\"gatewayId\":\"(\\w+)\",\"deviceId\":\"(\\w+)\",\"devicePartId\":\"(\\w+)\",\"propertyType\":\"(\\w+)\",\"valueType\":\"(\\w+)\",\"state\":(\\w+)\\}");
         std::smatch result;
         std::regex_match(json, result, responseRegex);
 
@@ -112,11 +112,11 @@ struct DevicePropertyChangeRequest
             const auto gatewayId = result[1];
             const auto deviceId = result[2];
             const auto devicePartId = result[3];
-            const auto deviceStateType = result[4];
+            const auto propertyType = result[4];
             const auto valueType = result[5];
             const auto state = result[6];
 
-            return DevicePropertyChangeRequest(gatewayId, deviceId, devicePartId, deviceStateType, valueType, state);
+            return DevicePropertyChangeRequest(gatewayId, deviceId, devicePartId, propertyType, valueType, state);
         }
         return DevicePropertyChangeRequest();
     }
@@ -125,7 +125,7 @@ struct DevicePropertyChangeRequest
     const std::string gatewayId;
     const std::string deviceId;
     const std::string devicePartId;
-    const std::string deviceStateType;
+    const std::string propertyType;
     const std::string valueType;
     const std::string state;
 };
